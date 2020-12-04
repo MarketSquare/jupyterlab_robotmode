@@ -1,0 +1,45 @@
+{
+  "name": "@marketsquare/jupyterlab_robotmode",
+  "version": "0.1.0",
+  "description": "A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax",
+  "author": "MarketSquare",
+  "bugs": {
+    "url": "https://github.com/MarketSquare/jupyterlab_robotmode/issues"
+  },
+  "dependencies": {
+    "@jupyterlab/application": ">=1.2.6"
+  },
+  "peerDependencies": {
+    "codemirror": "~5.39.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.2",
+    "rimraf": "~3.0.2",
+    "typescript": "~3.8.3"
+  },
+  "files": [
+    "{lib,style}/**/*.{css,d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}"
+  ],
+  "homepage": "https://github.com/MarketSquare/jupyterlab_robotmode",
+  "jupyterlab": {
+    "extension": "lib/plugin.js"
+  },
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension"
+  ],
+  "license": "BSD-3-Clause",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarketSquare/jupyterlab_robotmode.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "watch": "tsc -w",
+    "prepublishOnly": "cross-env NODE_ENV=production npm run build"
+  },
+  "types": "lib/index.d.ts"
+}
