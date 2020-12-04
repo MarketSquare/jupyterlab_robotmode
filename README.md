@@ -1,4 +1,4 @@
-# MarkettSquare jupyterlab_robotmode
+# MarketSquare jupyterlab_robotmode
 
 A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax
 
