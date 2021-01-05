@@ -13,13 +13,11 @@
   https://github.com/robotframework/robotframework
 */
 
-// tslint:disable-next-line
-/// <reference path="../typings/codemirror/codemirror.d.ts"/>
 
-// tslint:disable-next-line
-import 'codemirror/addon/mode/simple';
+import { ICodeMirror } from '@jupyterlab/codemirror';
 
-import * as CodeMirror from 'codemirror';
+import { ISimpleState, TSimpleStates, ISimpleMeta } from 'codemirror';
+
 
 /** All the possible states: pushing non-existing states == bad */
 export type TMainState = 'test_cases' | 'keywords' | 'settings' | 'variables';
@@ -71,47 +69,12 @@ export function LINK(token: TT): TT {
   return (token + '.link') as any;
 }
 
-/**
-  An implementation of the CodeMirror simple mode object
-
-  https://github.com/codemirror/CodeMirror/blob/master/addon/mode/simple.js
-*/
-interface ISimpleState {
-  /** The regular expression that matches the token. May be a string or a regex object. When a regex, the ignoreCase flag will be taken into account when matching the token. This regex has to capture groups when the token property is an array. If it captures groups, it must capture all of the string (since JS provides no way to find out where a group matched). */
-  regex: string | RegExp;
-  /// An optional token style. Multiple styles can be specified by separating them with dots or spaces. When this property holds an array of token styles, the regex for this rule must capture a group for each array item.
-  token?: TT | TT[] | null;
-  /// When true, this token will only match at the start of the line. (The ^ regexp marker doesn't work as you'd expect in this context because of limitations in JavaScript's RegExp API.)
-  sol?: boolean;
-  /// When a next property is present, the mode will transfer to the state named by the property when the token is encountered.
-  next?: TState;
-  /// Like next, but instead replacing the current state by the new state, the current state is kept on a stack, and can be returned to with the pop directive.
-  push?: TState;
-  /// When true, and there is another state on the state stack, will cause the mode to pop that state off the stack and transition to it.
-  pop?: boolean;
-  /// Can be used to embed another mode inside a mode. When present, must hold an object with a spec property that describes the embedded mode, and an optional end end property that specifies the regexp that will end the extent of the mode. When a persistent property is set (and true), the nested mode's state will be preserved between occurrences of the mode.
-  mode?: {
-    spec: string;
-    end?: string | RegExp;
-    persistent?: boolean;
-  };
-  /// When true, this token changes the indentation to be one unit more than the current line's indentation.
-  indent?: boolean;
-  /// When true, this token will pop one scope off the indentation stack.
-  dedent?: boolean;
-  /// If a token has its dedent property set, it will, by default, cause lines where it appears at the start to be dedented. Set this property to false to prevent that behavior.
-  dedentIfLineStart?: boolean;
-}
-
-/** A string-keyed set of simple state lists */
-export type IStates = { [key in TState]: ISimpleState[] };
-
 /** helper function for compactly representing a rule */
 function r(
   regex: RegExp,
   token?: TT | TT[],
-  opt?: Partial<ISimpleState>
-): ISimpleState {
+  opt?: Partial<ISimpleState<string, any>>
+): ISimpleState<string, any> {
   return { regex, token, ...opt };
 }
 
@@ -226,7 +189,7 @@ const RULE_NOT_ELLIPSIS_POP = r(/(?!\s*(\\|\.\.\.))/, null, {
 const RULE_DOC_TAGS = r(/(Tags:)(\s*)/i, [TT.MT, null], { push: 'tags_comma' });
 
 /** collects the states that we build */
-const states: Partial<IStates> = {};
+const states: Partial<TSimpleStates> = {};
 
 /** base isn't a state. these are the "normal business" that any state might use */
 const base = [
@@ -411,6 +374,8 @@ states.keywords = [
 
 /** a keyword name fragment before an inline variable */
 const KEYWORD_WORD_BEFORE_VAR = /([^\s]*?(?=[\$&%@]\{))/i;
+/** a keyword containing spaces before a separator */
+const KEYWORD_WORD_WITH_SPACES_BEFORE_SEP = /(?:[^\t\n\r\|])+?(?=$|\t|\n|\r|  +)/;
 /** a keyword name fragment before a separator */
 const KEYWORD_WORD_BEFORE_SEP = /[^\s\|]+(?=$|[|]|\t|  +)/;
 /** a keyword name fragment before a non-separator whitespace character */
@@ -520,6 +485,7 @@ states.keyword_invocation = [
   r(/( \| |  +|\t+)/, TT.BK, { pop: true }),
   r(/ /, null),
   r(KEYWORD_WORD_BEFORE_VAR, TT.KW, { pop: true }),
+  r(KEYWORD_WORD_WITH_SPACES_BEFORE_SEP, TT.KW, { pop: true }),
   r(KEYWORD_WORD_BEFORE_SEP, TT.KW, { pop: true }),
   r(KEYWORD_WORD_BEFORE_WS, TT.KW),
   ...base
@@ -593,6 +559,7 @@ states.variable_index = [
   r(/[^\]]/, TT.ST)
 ];
 
+
 /** well-known mime type for robot framework (pygments, etc.) */
 export const MIME_TYPE = 'text/x-robotframework';
 /** the canonical CodeMirror mode name */
@@ -605,14 +572,18 @@ export const DEFAULT_EXTENSION = 'robot';
 export const EXTENSIONS = [DEFAULT_EXTENSION, 'resource'];
 
 /** the actual exported function that will install the mode in CodeMirror */
-export function defineRobotMode() {
-  const _CodeMirror = CodeMirror as any;
-  _CodeMirror.defineSimpleMode(MODE_NAME, {
+export function defineRobotMode({ CodeMirror }: ICodeMirror) {
+  const meta: ISimpleMeta<string, any> = {
     meta: {
       dontIndentStates: ['comment'],
       lineComment: '#'
-    },
-    ...states
+    }
+  };
+
+  CodeMirror.defineSimpleMode<string, any>(MODE_NAME, {
+    ...states,
+    // @ts-ignore: There is a compilation error for some reason
+    meta
   });
 
   CodeMirror.defineMIME(MIME_TYPE, MODE_NAME);
@@ -624,6 +595,3 @@ export function defineRobotMode() {
     name: MODE_LABEL
   });
 }
-
-/** install the mode */
-defineRobotMode();
