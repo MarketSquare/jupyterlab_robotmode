@@ -15,6 +15,12 @@ A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax
 pip install jupyterlab_robotmode
 ```
 
+or
+
+```bash
+conda install jupyterlab_robotmode -c conda-forge
+```
+
 ### For JupyterLab <=2
 
 ```bash
