@@ -9,16 +9,14 @@ A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax
 
 ## Installation
 
+### For JupyterLab 3
+
 ```bash
-jupyter labextension install @marketsquare/jupyterlab_robotmode
+pip install jupyterlab_robotmode
 ```
 
-## Development
-
-For a development install, do the following in the repository directory:
+### For JupyterLab <=2
 
 ```bash
-jlpm install
-jlpm run build
-jupyter labextension install .
+jupyter labextension install @marketsquare/jupyterlab_robotmode
 ```

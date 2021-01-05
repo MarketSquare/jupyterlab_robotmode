@@ -1,6 +1,6 @@
 {
   "name": "@marketsquare/jupyterlab_robotmode",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax",
   "author": "MarketSquare",
   "bugs": {
