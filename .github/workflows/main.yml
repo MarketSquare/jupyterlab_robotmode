@@ -2,45 +2,51 @@ name: Tests
 
 on:
   push:
-    branches:
-    - main
+    branches: [main]
   pull_request:
-    branches:
-    - main
+    branches: [main]
 
 defaults:
   run:
     shell: bash -l {0}
 
+env:
+  CACHE_EPOCH: 0
+  BINDER_ENV: .binder/environment.yml
+
 jobs:
   run:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3.9]
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2
+    - name: Cache conda
+      uses: actions/cache@v1
       with:
-        activate-environment: default
-        environment-file: environment.yml
-        python-version: ${{ matrix.python-version }}
-        mamba-version: "*"
-        auto-activate-base: false
-        channels: conda-forge
+        path: ~/conda_pkgs_dir
+        key: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-${{ hashFiles(env.BINDER_ENV) }}
+        restore-keys:
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-
 
-    - name: Mamba install dependencies
-      run: mamba install python=${{ matrix.python-version }} pip nodejs jupyterlab=3 jupyter-packaging
+    - name: Cache JS
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: |
+          ${{ env.CACHE_EPOCH }}-node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+    - name: Setup conda
+      uses: conda-incubator/setup-miniconda@master  # TODO: revert to @v2 when miniforge available
+      with:
+        environment-file: ${{ env.BINDER_ENV }}
+        miniconda-variant: Mambaforge
+        use-only-tar-bz2: true
 
     - name: Install jupyterlab_robotmode
-      run: pip install -e .
+      run: python -m pip install -e . --no-build-isolation --no-deps
 
     - name: Run frontend unit tests
       run: jlpm test

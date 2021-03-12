@@ -1,13 +1,12 @@
-# This is a micromamba configuration file
-
 name: default
 
 channels:
   - conda-forge
+  - nodefaults
 
 dependencies:
   - python
   - pip
-  - nodejs
-  - jupyterlab=3
+  - nodejs >=12,!=13.*,<15
+  - jupyterlab >=3,<4
   - jupyter-packaging
