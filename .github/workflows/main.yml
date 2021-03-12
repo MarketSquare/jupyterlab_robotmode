@@ -117,4 +117,5 @@ jobs:
     - name: Check labextension
       run: |
         set -eux
+        jupyter labextension list
         jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
