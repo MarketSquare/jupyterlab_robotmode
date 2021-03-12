@@ -102,10 +102,31 @@ jobs:
         name: jupyterlab_robotmode dist ${{ github.run_number }}
         path: ./dist
 
-    - name: Install Dependencies
+    - name: Install Setup Dependencies
       run: |
         set -eux
         ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel setuptools
+
+    - name: Get Python Cache Location and Distribution
+      id: cache-pip
+      shell: bash -l {0}
+      run: |
+        set -eux
+        echo "::set-output name=dir::$(${{ matrix.py-cmd }} -m pip cache dir)"
+
+    - name: Cache Python Dependencies
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.cache-pip.outputs.dir }}
+        key: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-${{ matrix.lab-version }}
+        restore-keys: |
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-
+          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+
+    - name: Install Dependencies
+      run: |
+        set -eux
         ${{ matrix.py-cmd }} -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
 
     - name: Install Distribution
@@ -113,19 +134,6 @@ jobs:
         set -eux
         cd dist
         ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }}
-
-    - name: Get sys.prefix
-      id: sys-prefix
-      shell: bash -l {0}
-      run: |
-        set -eux
-        echo "::set-output name=path::$(${{ matrix.py-cmd }} -c 'import sys; print(sys.prefix)')"
-
-    - name: Check installation files
-      run: |
-        set -eux
-        test -d ${{ steps.sys-prefix.outputs.path }}/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode
-        test -f ${{ steps.sys-prefix.outputs.path }}/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode/package.json
 
     - name: Check labextension
       run: |
