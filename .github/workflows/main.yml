@@ -83,6 +83,12 @@ jobs:
           dist: jupyterlab_robotmode*.tar.gz
         - python-version: 3.9
           dist: jupyterlab_robotmode*.whl
+        - os: windows
+          py-cmd: python
+        - os: macos
+          py-cmd: python3
+        - os: ubuntu
+          py-cmd: python
 
     steps:
     - name: Install Python
@@ -99,21 +105,21 @@ jobs:
     - name: Install Dependencies
       run: |
         set -eux
-        pip install --upgrade pip wheel setuptools
-        pip install 'jupyterlab==${{ matrix.lab-version }}.*'
+        ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel setuptools
+        ${{ matrix.py-cmd }} -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
 
     - name: Install Distribution
       run: |
         set -eux
         cd dist
-        pip install -v ${{ matrix.dist }}
+        ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }}
 
     - name: Get sys.prefix
       id: sys-prefix
       shell: bash -l {0}
       run: |
         set -eux
-        echo "::set-output name=path::$(python -c 'import sys; print(sys.prefix)')"
+        echo "::set-output name=path::$(${{ matrix.py-cmd }} -c 'import sys; print(sys.prefix)')"
 
     - name: Check installation files
       run: |
@@ -124,5 +130,5 @@ jobs:
     - name: Check labextension
       run: |
         set -eux
-        jupyter labextension list
-        jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
+        ${{ matrix.py-cmd }} -m jupyter labextension list
+        ${{ matrix.py-cmd }} -m jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
