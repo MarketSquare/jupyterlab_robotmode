@@ -304,6 +304,41 @@ const RULE_START_LOOP_NEW = r(
     sol: true
   }
 );
+/** rule for if keyword */
+const RULE_START_IF = r(
+  /(\s\|*\s*)(IF)(\s\|*\s*)/,
+  [null, TT.AM, null],
+  {
+    push: 'loop_start_if',
+    sol: true
+  }
+);
+/** rule for else if keyword */
+const RULE_START_ELSE_IF = r(
+  /(\s\|*\s*)(ELSE IF)(\s\|*\s*)/,
+  [null, TT.AM, null],
+  {
+    pop: true,
+    push: 'loop_start_else_if',
+    sol: true
+  }
+);
+/** rule for else keyword */
+const RULE_START_ELSE = r(
+  /(\s\|*\s*)(ELSE)/,
+  [null, TT.AM],
+  {
+    pop: true,
+    push: 'loop_start_else',
+    sol: true
+  }
+);
+/** rule for end keyword */
+const RULE_END = r(
+  /([\|\s]*\s*)(END)/,
+  [null, TT.AM],
+  { sol: true, pop: true },
+);
 
 const RULES_TAGS_COMMON = [
   r(/\s\|\s*/, TT.BK),
@@ -367,6 +402,7 @@ states.keywords = [
   r(/(?=[^\s$&%@*|]+)/, null, { sol: true, push: 'keyword_def' }),
   RULE_START_LOOP_OLD,
   RULE_START_LOOP_NEW,
+  RULE_START_IF,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
   ...base
@@ -405,7 +441,48 @@ states.loop_start_new = [
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
   RULE_VAR_END,
-  r(/([\|\s]*\s*)(END)/, [null, TT.AM], { sol: true, pop: true }),
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base
+];
+
+states.loop_start_if = [
+  r(/[.]{3}/, TT.BK),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_ELSE_IF,
+  RULE_START_ELSE,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base
+];
+
+states.loop_start_else_if = [
+  RULE_START_ELSE_IF,
+  r(/[.]{3}/, TT.BK),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_ELSE,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base
+];
+
+states.loop_start_else = [
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
   ...base
@@ -461,6 +538,7 @@ states.test_cases = [
   RULE_CASE_SETTING_SIMPLE_PIPE,
   RULE_START_LOOP_OLD,
   RULE_START_LOOP_NEW,
+  RULE_START_IF,
   r(/([^|\s*].+?)(?=(\t|  +|$))/, TT.SH, { sol: true }),
   ...RULES_KEYWORD_INVOKING,
   r(/(\|\s+)([^\s*\|\.][^\|]*?)(\s*)(\|?$)/, [TT.BK, TT.SH, TT.BK], {
