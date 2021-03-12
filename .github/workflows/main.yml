@@ -77,6 +77,7 @@ jobs:
       matrix:
         os: [ubuntu, windows, macos]
         python-version: [3.6, 3.9]
+        lab-version: [3]
         include:
         - python-version: 3.6
           dist: jupyterlab_robotmode*.tar.gz
@@ -94,6 +95,12 @@ jobs:
       with:
         name: jupyterlab_robotmode dist ${{ github.run_number }}
         path: ./dist
+
+    - name: Install Dependencies
+      run: |
+        set -eux
+        pip install --upgrade pip wheel setuptools
+        pip install 'jupyterlab==${{ matrix.lab-version }}.*'
 
     - name: Install Distribution
       run: |
