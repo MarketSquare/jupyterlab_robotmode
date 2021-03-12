@@ -42,7 +42,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@master  # TODO: revert to @v2 when miniforge available
       with:
         environment-file: ${{ env.BINDER_ENV }}
-        miniconda-variant: Mambaforge
+        miniforge-variant: Mambaforge
         use-mamba: true
         use-only-tar-bz2: true
 
