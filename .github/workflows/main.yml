@@ -15,7 +15,7 @@ env:
   BINDER_ENV: .binder/environment.yml
 
 jobs:
-  run:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -43,7 +43,26 @@ jobs:
       with:
         environment-file: ${{ env.BINDER_ENV }}
         miniconda-variant: Mambaforge
+        use-mamba: true
         use-only-tar-bz2: true
+
+    - name: Build Python packages
+      run: python setup.py sdist bdist_wheel
+
+    - name: Check built packages
+      run: twine check dist/*
+
+    - name: Build NPM package
+      run: cd dist && npm pack ..
+
+    - name: Hash Distributions
+      run: cd dist && sha256sum * | tee SHA256SUMS
+
+    - name: Upload Distributions
+      uses: actions/upload-artifact@v2
+      with:
+        name: jupyterlab_robotmode dist ${{ github.run_number }}
+        path: ./dist
 
     - name: Install jupyterlab_robotmode
       run: python -m pip install -e . --no-build-isolation --no-deps
@@ -51,11 +70,51 @@ jobs:
     - name: Run frontend unit tests
       run: jlpm test
 
+  test:
+    needs: [build]
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        os: [ubuntu, windows, macos]
+        python-version: [3.6, 3.9]
+        include:
+        - python-version: 3.6
+          dist: jupyterlab_robotmode*.tar.gz
+        - python-version: 3.9
+          dist: jupyterlab_robotmode*.whl
+
+    steps:
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Download Distributions
+      uses: actions/download-artifact@v2
+      with:
+        name: jupyterlab_robotmode dist ${{ github.run_number }}
+        path: ./dist
+
+    - name: Install Distribution
+      run: |
+        set -eux
+        cd dist
+        pip install -v ${{ matrix.dist }}
+
+    - name: Get sys.prefix
+      id: sys-prefix
+      shell: bash -l {0}
+      run: |
+        set -eux
+        echo "::set-output name=path::python -c 'import sys; print(sys.prefix)'"
+
     - name: Check installation files
       run: |
-        test -d $CONDA_PREFIX/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode
-        test -f $CONDA_PREFIX/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode/package.json
+        set -eux
+        test -d ${{ steps.sys-prefix.outputs.path }}/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode
+        test -f ${{ steps.sys-prefix.outputs.path }}/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode/package.json
 
     - name: Check labextension
       run: |
+        set -eux
         jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -

@@ -5,8 +5,10 @@ channels:
   - nodefaults
 
 dependencies:
-  - python
-  - pip
-  - nodejs >=12,!=13.*,<15
-  - jupyterlab >=3,<4
   - jupyter-packaging
+  - jupyterlab >=3,<4
+  - nodejs >=12,!=13.*,<15
+  - pip
+  - python
+  - twine
+  - wheel
