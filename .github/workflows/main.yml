@@ -8,6 +8,10 @@ on:
     branches:
     - main
 
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   run:
     runs-on: ${{ matrix.os }}
@@ -25,24 +29,27 @@ jobs:
     - name: Setup conda
       uses: conda-incubator/setup-miniconda@v2
       with:
+        activate-environment: default
+        environment-file: environment.yml
+        python-version: ${{ matrix.python-version }}
         mamba-version: "*"
+        auto-activate-base: false
         channels: conda-forge
 
     - name: Mamba install dependencies
-      shell: bash -l {0}
       run: mamba install python=${{ matrix.python-version }} pip nodejs jupyterlab=3 jupyter-packaging
 
     - name: Install jupyterlab_robotmode
-      shell: bash -l {0}
       run: pip install -e .
 
+    - name: Run frontend unit tests
+      run: jlpm test
+
     - name: Check installation files
-      shell: bash -l {0}
       run: |
         test -d $CONDA_PREFIX/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode
         test -f $CONDA_PREFIX/share/jupyter/labextensions/@marketsquare/jupyterlab_robotmode/package.json
 
     - name: Check labextension
-      shell: bash -l {0}
       run: |
         jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -

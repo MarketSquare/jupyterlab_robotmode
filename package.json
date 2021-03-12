@@ -1,22 +1,31 @@
 {
   "name": "@marketsquare/jupyterlab_robotmode",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax",
   "author": "MarketSquare",
   "bugs": {
     "url": "https://github.com/MarketSquare/jupyterlab_robotmode/issues"
   },
   "dependencies": {
-    "@jupyterlab/application": "^3.0.0",
-    "@jupyterlab/codemirror": "^3.0.0"
+    "@jupyterlab/application": "^3.0.6",
+    "@jupyterlab/codemirror": "^3.0.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.8",
+    "@babel/preset-env": "^7.13.9",
+    "@jupyterlab/builder": "^3.0.4",
     "@types/codemirror": "^0.0.97",
-    "@jupyterlab/builder": "^3.0.0",
+    "@types/jest": "^26.0.20",
+    "@types/jsdom": "^16.2.6",
+    "@types/node": "^14.14.31",
+    "babel-jest": "^26.6.3",
     "cross-env": "^7.0.2",
+    "jest": "^26.6.3",
+    "jest-fetch-mock": "^3.0.3",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
-    "typescript": "~4.0.3"
+    "ts-jest": "^26.5.3",
+    "typescript": "~4.2.3"
   },
   "files": [
     "{lib,style}/**/*.{css,d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}"
@@ -53,7 +62,8 @@
     "prepublishOnly": "cross-env NODE_ENV=production npm run build",
     "watch": "run-p watch:src watch:labextension",
     "watch:labextension": "jupyter labextension watch .",
-    "watch:src": "tsc -w"
+    "watch:src": "tsc -w",
+    "test": "jest"
   },
   "types": "lib/index.d.ts"
 }

@@ -11,5 +11,6 @@
     "outDir": "./lib",
     "target": "ES5"
   },
-  "include": ["src/*"]
+  "files": ["node_modules/@jupyterlab/codemirror/typings/codemirror/codemirror.d.ts"],
+  "include": ["src/**/*"],
 }
