@@ -1,0 +1,14 @@
+name: default
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - jupyter-packaging >=0.7.9,<0.8
+  - jupyterlab >=3,<4
+  - nodejs >=12,!=13.*,<15
+  - pip
+  - python
+  - twine
+  - wheel

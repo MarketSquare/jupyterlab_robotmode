@@ -1,4 +1,5 @@
+*.egg-info
+coverage
+jupyterlab_robotmode/labextension
 lib
 node_modules
-jupyterlab_robotmode/labextension
-coverage
