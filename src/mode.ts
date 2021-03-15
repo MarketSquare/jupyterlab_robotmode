@@ -309,7 +309,7 @@ const RULE_START_IF = r(
   /(\s\|*\s*)(IF)(\s\|*\s*)/,
   [null, TT.AM, null],
   {
-    push: 'loop_start_if',
+    push: 'if_start',
     sol: true
   }
 );
@@ -318,8 +318,7 @@ const RULE_START_ELSE_IF = r(
   /(\s\|*\s*)(ELSE IF)(\s\|*\s*)/,
   [null, TT.AM, null],
   {
-    pop: true,
-    push: 'loop_start_else_if',
+    next: 'else_if_start',
     sol: true
   }
 );
@@ -328,8 +327,7 @@ const RULE_START_ELSE = r(
   /(\s\|*\s*)(ELSE)/,
   [null, TT.AM],
   {
-    pop: true,
-    push: 'loop_start_else',
+    next: 'else_start',
     sol: true
   }
 );
@@ -449,7 +447,7 @@ states.loop_start_new = [
   ...base
 ];
 
-states.loop_start_if = [
+states.if_start = [
   r(/[.]{3}/, TT.BK),
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
@@ -464,14 +462,14 @@ states.loop_start_if = [
   ...base
 ];
 
-states.loop_start_else_if = [
-  RULE_START_ELSE_IF,
+states.else_if_start = [
   r(/[.]{3}/, TT.BK),
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
   RULE_VAR_END,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
+  RULE_START_ELSE_IF,
   RULE_START_ELSE,
   RULE_END,
   RULE_WS_LINE,
@@ -479,7 +477,7 @@ states.loop_start_else_if = [
   ...base
 ];
 
-states.loop_start_else = [
+states.else_start = [
   RULE_START_LOOP_NEW,
   RULE_START_IF,
   RULE_END,
