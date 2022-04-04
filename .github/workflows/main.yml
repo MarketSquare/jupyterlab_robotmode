@@ -19,56 +19,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Cache conda
-      uses: actions/cache@v1
-      with:
-        path: ~/conda_pkgs_dir
-        key: |
-          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-${{ hashFiles(env.BINDER_ENV) }}
-        restore-keys:
-          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-
+      - name: Cache conda
+        uses: actions/cache@v1
+        with:
+          path: ~/conda_pkgs_dir
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-${{ hashFiles(env.BINDER_ENV) }}
+          restore-keys: ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-
 
-    - name: Cache JS
-      uses: actions/cache@v2
-      with:
-        path: node_modules
-        key: |
-          ${{ env.CACHE_EPOCH }}-node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: Cache JS
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: |
+            ${{ env.CACHE_EPOCH }}-node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        environment-file: ${{ env.BINDER_ENV }}
-        miniforge-variant: Mambaforge
-        use-mamba: true
-        use-only-tar-bz2: true
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: ${{ env.BINDER_ENV }}
+          miniforge-variant: Mambaforge
+          use-mamba: true
+          use-only-tar-bz2: true
 
-    - name: Build Python packages
-      run: python setup.py sdist bdist_wheel
+      - name: Build Python packages
+        run: python setup.py sdist bdist_wheel
 
-    - name: Check built packages
-      run: twine check dist/*
+      - name: Check built packages
+        run: twine check dist/*
 
-    - name: Build NPM package
-      run: cd dist && npm pack --ignore-scripts ..
+      - name: Build NPM package
+        run: cd dist && npm pack --ignore-scripts ..
 
-    - name: Hash Distributions
-      run: cd dist && sha256sum * | tee SHA256SUMS
+      - name: Hash Distributions
+        run: cd dist && sha256sum * | tee SHA256SUMS
 
-    - name: Upload Distributions
-      uses: actions/upload-artifact@v2
-      with:
-        name: jupyterlab_robotmode dist ${{ github.run_number }}
-        path: ./dist
+      - name: Upload Distributions
+        uses: actions/upload-artifact@v2
+        with:
+          name: jupyterlab_robotmode dist ${{ github.run_number }}
+          path: ./dist
 
-    - name: Install jupyterlab_robotmode
-      run: python -m pip install -e . --no-build-isolation --no-deps --install-option="--skip-npm"
+      - name: Install jupyterlab_robotmode
+        run:
+          python -m pip install -e . --no-build-isolation --no-deps
+          --install-option="--skip-npm"
 
-    - name: Run frontend unit tests
-      run: jlpm test
+      - name: Run frontend unit tests
+        run: jlpm test
 
   test:
     needs: [build]
@@ -79,64 +80,64 @@ jobs:
         python-version: ['3.7', '3.10']
         lab-version: ['3']
         include:
-        - python-version: '3.7'
-          dist: jupyterlab_robotmode*.tar.gz
-        - python-version: '3.10'
-          dist: jupyterlab_robotmode*.whl
-        - os: windows
-          py-cmd: python
-        - os: macos
-          py-cmd: python3
-        - os: ubuntu
-          py-cmd: python
+          - python-version: '3.7'
+            dist: jupyterlab_robotmode*.tar.gz
+          - python-version: '3.10'
+            dist: jupyterlab_robotmode*.whl
+          - os: windows
+            py-cmd: python
+          - os: macos
+            py-cmd: python3
+          - os: ubuntu
+            py-cmd: python
 
     steps:
-    - name: Install Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Download Distributions
-      uses: actions/download-artifact@v2
-      with:
-        name: jupyterlab_robotmode dist ${{ github.run_number }}
-        path: ./dist
+      - name: Download Distributions
+        uses: actions/download-artifact@v2
+        with:
+          name: jupyterlab_robotmode dist ${{ github.run_number }}
+          path: ./dist
 
-    - name: Install Setup Dependencies
-      run: |
-        set -eux
-        ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel setuptools
+      - name: Install Setup Dependencies
+        run: |
+          set -eux
+          ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel setuptools
 
-    - name: Get Python Cache Location and Distribution
-      id: cache-pip
-      shell: bash -l {0}
-      run: |
-        set -eux
-        echo "::set-output name=dir::$(${{ matrix.py-cmd }} -m pip cache dir)"
+      - name: Get Python Cache Location and Distribution
+        id: cache-pip
+        shell: bash -l {0}
+        run: |
+          set -eux
+          echo "::set-output name=dir::$(${{ matrix.py-cmd }} -m pip cache dir)"
 
-    - name: Cache Python Dependencies
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.cache-pip.outputs.dir }}
-        key: |
-          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-${{ matrix.lab-version }}
-        restore-keys: |
-          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-
-          ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+      - name: Cache Python Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.cache-pip.outputs.dir }}
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-${{ matrix.lab-version }}
+          restore-keys: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
 
-    - name: Install Dependencies
-      run: |
-        set -eux
-        ${{ matrix.py-cmd }} -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
+      - name: Install Dependencies
+        run: |
+          set -eux
+          ${{ matrix.py-cmd }} -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
 
-    - name: Install Distribution
-      run: |
-        set -eux
-        cd dist
-        ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }}
+      - name: Install Distribution
+        run: |
+          set -eux
+          cd dist
+          ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }}
 
-    - name: Check labextension
-      run: |
-        set -eux
-        ${{ matrix.py-cmd }} -m jupyter labextension list
-        ${{ matrix.py-cmd }} -m jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
+      - name: Check labextension
+        run: |
+          set -eux
+          ${{ matrix.py-cmd }} -m jupyter labextension list
+          ${{ matrix.py-cmd }} -m jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -

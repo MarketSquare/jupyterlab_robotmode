@@ -13,62 +13,62 @@
   https://github.com/robotframework/robotframework
 */
 
-import { ICodeMirror } from "@jupyterlab/codemirror";
+import { ICodeMirror } from '@jupyterlab/codemirror';
 
-import { ISimpleState, TSimpleStates, ISimpleMeta } from "codemirror";
+import { ISimpleState, TSimpleStates, ISimpleMeta } from 'codemirror';
 
 /** All the possible states: pushing non-existing states == bad */
-export type TMainState = "test_cases" | "keywords" | "settings" | "variables";
+export type TMainState = 'test_cases' | 'keywords' | 'settings' | 'variables';
 export type TState =
   | TMainState
-  | "comment"
-  | "double_string"
-  | "keyword_def"
-  | "keyword_invocation"
-  | "keyword_invocation_no_continue"
-  | "library"
-  | "if_start"
-  | "else_if_start"
-  | "else_start"
-  | "loop_body_old"
-  | "loop_start_new"
-  | "loop_start_old"
-  | "single_string"
-  | "start"
-  | "tags"
-  | "tags_comma"
-  | "variable_index"
-  | "variable_property"
-  | "variable";
+  | 'comment'
+  | 'double_string'
+  | 'keyword_def'
+  | 'keyword_invocation'
+  | 'keyword_invocation_no_continue'
+  | 'library'
+  | 'if_start'
+  | 'else_if_start'
+  | 'else_start'
+  | 'loop_body_old'
+  | 'loop_start_new'
+  | 'loop_start_old'
+  | 'single_string'
+  | 'start'
+  | 'tags'
+  | 'tags_comma'
+  | 'variable_index'
+  | 'variable_property'
+  | 'variable';
 
 /** the tokens we use */
 export enum TT {
-  AM = "atom",
-  AT = "attribute",
-  BE = "builtin.em",
-  BI = "builtin",
-  BK = "bracket",
-  CM = "comment",
-  DF = "def",
-  HL = "header",
-  KW = "keyword",
-  MT = "meta",
-  NB = "number",
-  OP = "operator",
-  PC = "punctuation",
-  PR = "property",
-  SE = "string.em",
-  SH = "string.header",
-  SS = "string.strong",
-  SSE = "string.strong.em",
-  S2 = "string-2",
-  ST = "string",
-  TG = "tag",
-  V2 = "variable-2",
+  AM = 'atom',
+  AT = 'attribute',
+  BE = 'builtin.em',
+  BI = 'builtin',
+  BK = 'bracket',
+  CM = 'comment',
+  DF = 'def',
+  HL = 'header',
+  KW = 'keyword',
+  MT = 'meta',
+  NB = 'number',
+  OP = 'operator',
+  PC = 'punctuation',
+  PR = 'property',
+  SE = 'string.em',
+  SH = 'string.header',
+  SS = 'string.strong',
+  SSE = 'string.strong.em',
+  S2 = 'string-2',
+  ST = 'string',
+  TG = 'tag',
+  V2 = 'variable-2',
 }
 
 export function LINK(token: TT): TT {
-  return (token + ".link") as any;
+  return (token + '.link') as any;
 }
 
 /** helper function for compactly representing a rule */
@@ -106,10 +106,11 @@ const VAR_NUM = /0(b[01]+|o[0-7]+|x[0-9a-f]+)|(\d+)(\.\d+)?(e-?(\d+)(\.\d+)?)?/i
     Valid python builtins
     Valid  way out at the end is a lookahead for VAR_OP, end or .
 */
-const VAR_BUILTIN = /(none|(cur|temp|exec)dir|\/|:|\\n|true|empty|false|null|space|test (name|documentation|status|message|tags)|prev test (name|status|message)|suite (name|source|documentation|status|message|metadata)|keyword (status|message)|(report|debug) file|log (file|level)|output (dir|file))(?=[.}]|\s+[*\-+\\%&|=><!])/i;
+const VAR_BUILTIN =
+  /(none|(cur|temp|exec)dir|\/|:|\\n|true|empty|false|null|space|test (name|documentation|status|message|tags)|prev test (name|status|message)|suite (name|source|documentation|status|message|metadata)|keyword (status|message)|(report|debug) file|log (file|level)|output (dir|file))(?=[.}]|\s+[*\-+\\%&|=><!])/i;
 
 /** a rule for the beginning of the variable state */
-const RULE_VAR_START = r(/[\$&@%]\{/, TT.V2, { push: "variable" });
+const RULE_VAR_START = r(/[\$&@%]\{/, TT.V2, { push: 'variable' });
 /** a rule for the end of the variable state */
 const RULE_VAR_END = r(/\}/, TT.V2);
 
@@ -117,67 +118,59 @@ const RULE_VAR_END = r(/\}/, TT.V2);
 const RULE_NUM = r(VAR_NUM, TT.NB);
 
 /** a rule for starting a single quote */
-const RULE_SINGLE_STRING_START = r(/'/, TT.ST, { push: "single_string" });
+const RULE_SINGLE_STRING_START = r(/'/, TT.ST, { push: 'single_string' });
 /** a rule for starting a double quote */
-const RULE_DOUBLE_STRING_START = r(/"/, TT.ST, { push: "double_string" });
+const RULE_DOUBLE_STRING_START = r(/"/, TT.ST, { push: 'double_string' });
 
 /** a rule for capturing tags (and friends) in keyword/test/task definitions */
 const RULE_TAGS = r(
   /([|\s]*\s*)(\[\s*)(tags)(\s*\])(\s*\|?)/i,
   [TT.BK, TT.MT, TT.MT, TT.MT, TT.BK],
-  { sol: true, push: "tags" }
+  { sol: true, push: 'tags' }
 );
 
 /** rule for special case of applying tags at the suite level */
-const RULE_SUITE_TAGS = r(
-  /(force tags|default tags)(\t+|  +)/i,
-  [TT.MT, null],
-  {
-    push: "tags",
-    sol: true,
-  }
-);
+const RULE_SUITE_TAGS = r(/(force tags|default tags)(\t+|  +)/i, [TT.MT, null], {
+  push: 'tags',
+  sol: true,
+});
 /** rule for special case of applying tags at the suite level (with pipes) */
 const RULE_SUITE_TAGS_PIPE = r(
   /(\| +)(force tags|default tags)( *\|?)/i,
   [TT.BK, TT.MT, TT.BK],
-  { sol: true, push: "tags" }
+  { sol: true, push: 'tags' }
 );
 
 /** rule for bracketed settings of keyword/test/task */
 const RULE_SETTING_KEYWORD = r(
   /([|\s]*)(\[\s*)(setup|teardown|template)(\s*\])(\s*\|?)/i,
   [TT.BK, TT.MT, TT.MT, TT.MT, TT.BK],
-  { push: "keyword_invocation_no_continue", sol: true }
+  { push: 'keyword_invocation_no_continue', sol: true }
 );
 
 /** rule for bracketed settings of keyword/test/task that include a keyword */
 const RULE_SUITE_SETTING_KEYWORD = r(
   /(suite setup|suite teardown|test setup|test teardown|test template|task setup|task teardown|task template)(\t+|  +)/i,
   [TT.MT, null],
-  { push: "keyword_invocation", sol: true }
+  { push: 'keyword_invocation', sol: true }
 );
 
 /** rule for bracketed settings of keyword/test/task that include a keyword (with pipes) */
 const RULE_SUITE_SETTING_KEYWORD_PIPE = r(
   /(\| +)(suite setup|suite teardown|test setup|test teardown|test template|task setup|task teardown|task template)( +\|)/i,
   [TT.BK, TT.MT, TT.BK],
-  { push: "keyword_invocation", sol: true }
+  { push: 'keyword_invocation', sol: true }
 );
 
 const RULE_SETTING_LIBRARY = r(/(library)(\t+|  +)/i, [TT.MT, null], {
-  push: "library",
+  push: 'library',
   sol: true,
 });
 
-const RULE_SETTING_LIBRARY_PIPE = r(
-  /(\| +)(library)( +\|)/i,
-  [TT.BK, TT.MT, TT.BK],
-  {
-    push: "library",
-    sol: true,
-  }
-);
+const RULE_SETTING_LIBRARY_PIPE = r(/(\| +)(library)( +\|)/i, [TT.BK, TT.MT, TT.BK], {
+  push: 'library',
+  sol: true,
+});
 
 /** rule to escape the final closing bracket of a var at the end of a line */
 const RULE_LINE_ENDS_WITH_VAR = r(/\}\s*(?=$)/, TT.V2, { pop: true });
@@ -188,7 +181,7 @@ const RULE_NOT_ELLIPSIS_POP = r(/(?!\s*(\\|\.\.\.))/, null, {
   sol: true,
 });
 
-const RULE_DOC_TAGS = r(/(Tags:)(\s*)/i, [TT.MT, null], { push: "tags_comma" });
+const RULE_DOC_TAGS = r(/(Tags:)(\s*)/i, [TT.MT, null], { push: 'tags_comma' });
 
 /** collects the states that we build */
 const states: Partial<TSimpleStates> = {};
@@ -227,7 +220,7 @@ const base = [
 /** the starting state (begining of a file) */
 states.start = [
   r(/(%%python)( module )?(.*)?/, [TT.MT, TT.KW, TT.V2], {
-    mode: { spec: "ipython" },
+    mode: { spec: 'ipython' },
     sol: true,
   }),
   r(/(%%[^\s]*).*$/, TT.MT, { sol: true }),
@@ -270,13 +263,13 @@ const RULE_START_BDD = r(
   /(\|\s*\|\s*|\s\s+)?(given|when|then|and|but)/i,
   [TT.BK, TT.BE],
   {
-    push: "keyword_invocation",
+    push: 'keyword_invocation',
     sol: true,
   }
 );
 /** rule for whitespace keywords */
 const RULE_KEY_START = r(/(\t+|  +)(?!\.\.\.)/, null, {
-  push: "keyword_invocation",
+  push: 'keyword_invocation',
   sol: true,
 });
 /** rule for pipe keywords */
@@ -284,45 +277,33 @@ const RULE_KEY_START_PIPE = r(
   /(\| )(\s*)(|[^\|\s][^\|]*)(\s*)( \|)(\s+)/,
   [TT.BK, null, TT.SH, null, TT.BK, null],
   {
-    push: "keyword_invocation",
+    push: 'keyword_invocation',
     sol: true,
   }
 );
 /** rule for for old-style loops (slashes) */
-const RULE_START_LOOP_OLD = r(
-  /(\s\|*\s*)(:FOR)(\s\|*\s*)/,
-  [null, TT.AM, null],
-  {
-    push: "loop_start_old",
-    sol: true,
-  }
-);
+const RULE_START_LOOP_OLD = r(/(\s\|*\s*)(:FOR)(\s\|*\s*)/, [null, TT.AM, null], {
+  push: 'loop_start_old',
+  sol: true,
+});
 /** rule for for new-style loops (slashes) */
-const RULE_START_LOOP_NEW = r(
-  /(\s\|*\s*)(FOR)(\s\|*\s*)/,
-  [null, TT.AM, null],
-  {
-    push: "loop_start_new",
-    sol: true,
-  }
-);
+const RULE_START_LOOP_NEW = r(/(\s\|*\s*)(FOR)(\s\|*\s*)/, [null, TT.AM, null], {
+  push: 'loop_start_new',
+  sol: true,
+});
 /** rule for if keyword */
 const RULE_START_IF = r(/(\s\|*\s*)(IF)(\s\|*\s*)/, [null, TT.AM, null], {
-  push: "if_start",
+  push: 'if_start',
   sol: true,
 });
 /** rule for else if keyword */
-const RULE_START_ELSE_IF = r(
-  /(\s\|*\s*)(ELSE IF)(\s\|*\s*)/,
-  [null, TT.AM, null],
-  {
-    next: "else_if_start",
-    sol: true,
-  }
-);
+const RULE_START_ELSE_IF = r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, null], {
+  next: 'else_if_start',
+  sol: true,
+});
 /** rule for else keyword */
 const RULE_START_ELSE = r(/(\s\|*\s*)(ELSE)/, [null, TT.AM], {
-  next: "else_start",
+  next: 'else_start',
   sol: true,
 });
 /** rule for end keyword */
@@ -367,8 +348,8 @@ const RULES_KEYWORD_INVOKING = [
   RULE_START_BDD,
   RULE_KEY_START_PIPE,
   RULE_KEY_START,
-  r(/\|\s(?=[^\s*]*\|)/, null, { sol: true, push: "keyword_invocation" }),
-  r(/(?=[^\s*])/, null, { sol: true, push: "keyword_invocation" }),
+  r(/\|\s(?=[^\s*]*\|)/, null, { sol: true, push: 'keyword_invocation' }),
+  r(/(?=[^\s*])/, null, { sol: true, push: 'keyword_invocation' }),
 ];
 
 const RULE_SETTING_SIMPLE = r(
@@ -390,7 +371,7 @@ states.keywords = [
   RULE_SETTING_KEYWORD,
   RULE_SETTING_SIMPLE,
   RULE_SETTING_SIMPLE_PIPE,
-  r(/(?=[^\s$&%@*|]+)/, null, { sol: true, push: "keyword_def" }),
+  r(/(?=[^\s$&%@*|]+)/, null, { sol: true, push: 'keyword_def' }),
   RULE_START_LOOP_OLD,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
@@ -420,11 +401,7 @@ states.keyword_def = [
 ];
 
 /** A range as used in for loops */
-const RULE_RANGE = r(/([\|\s]*\s*)(IN)( RANGE| ENUMERATE| ZIP)?/, [
-  null,
-  TT.AM,
-  TT.AM,
-]);
+const RULE_RANGE = r(/([\|\s]*\s*)(IN)( RANGE| ENUMERATE| ZIP)?/, [null, TT.AM, TT.AM]);
 
 states.loop_start_new = [
   RULE_RANGE,
@@ -480,7 +457,7 @@ states.else_start = [
 ];
 
 states.loop_start_old = [
-  r(/(?=.*)/, null, { sol: true, next: "loop_body_old" }),
+  r(/(?=.*)/, null, { sol: true, next: 'loop_body_old' }),
   RULE_RANGE,
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
@@ -576,8 +553,8 @@ states.variable = [
   r(VAR_OP, TT.OP),
   r(/(:)(.*?[^\\])(?=\}\s*$)/, [TT.OP, TT.S2], { pop: true }),
   r(/(:)(.*?[^\\])(?=\})/, [TT.OP, TT.S2]),
-  r(/\./, TT.OP, { push: "variable_property" }),
-  r(/\[/, TT.BK, { next: "variable_index" }),
+  r(/\./, TT.OP, { push: 'variable_property' }),
+  r(/\[/, TT.BK, { next: 'variable_index' }),
   r(/\}(?=\[)/, TT.V2),
   r(/(?=\}\s*$)/, null, { pop: true }),
   r(/\}/, TT.V2, { pop: true }),
@@ -603,17 +580,9 @@ states.variable_property = [
 ];
 
 /** rules for strings with single quotes */
-states.single_string = [
-  r(/\\'/, TT.ST),
-  r(/'/, TT.ST, { pop: true }),
-  r(/./, TT.ST),
-];
+states.single_string = [r(/\\'/, TT.ST), r(/'/, TT.ST, { pop: true }), r(/./, TT.ST)];
 /** rules for strings with double quotes */
-states.double_string = [
-  r(/\\"/, TT.ST),
-  r(/"/, TT.ST, { pop: true }),
-  r(/./, TT.ST),
-];
+states.double_string = [r(/\\"/, TT.ST), r(/"/, TT.ST, { pop: true }), r(/./, TT.ST)];
 
 /** rules for square-bracketed index referencing */
 states.variable_index = [
@@ -629,22 +598,22 @@ states.variable_index = [
 ];
 
 /** well-known mime type for robot framework (pygments, etc.) */
-export const MIME_TYPE = "text/x-robotframework";
+export const MIME_TYPE = 'text/x-robotframework';
 /** the canonical CodeMirror mode name */
-export const MODE_NAME = "robotframework";
+export const MODE_NAME = 'robotframework';
 /** the human-readable name of the CodeMirror mode */
-export const MODE_LABEL = "robotframework";
+export const MODE_LABEL = 'robotframework';
 /** primary file extension */
-export const DEFAULT_EXTENSION = "robot";
+export const DEFAULT_EXTENSION = 'robot';
 /** all recognized file extensions */
-export const EXTENSIONS = [DEFAULT_EXTENSION, "resource"];
+export const EXTENSIONS = [DEFAULT_EXTENSION, 'resource'];
 
 /** the actual exported function that will install the mode in CodeMirror */
 export function defineRobotMode({ CodeMirror }: ICodeMirror) {
   const meta: ISimpleMeta<TState, TT> = {
     meta: {
-      dontIndentStates: ["comment"],
-      lineComment: "#",
+      dontIndentStates: ['comment'],
+      lineComment: '#',
     },
   };
 

@@ -19,11 +19,11 @@ document.createRange = () => {
     return {
       item: () => null,
       length: 0,
-      [Symbol.iterator]: jest.fn()
+      [Symbol.iterator]: jest.fn(),
     };
   };
   return range;
-}
+};
 
 const tokenTypeMap: { [key: string]: string } = {
   'cm-atom': 'atom',
@@ -33,15 +33,18 @@ const tokenTypeMap: { [key: string]: string } = {
   'cm-operator': 'operator',
   'cm-string': 'string',
   'cm-variable-2': 'variable2',
-}
+};
 
 const mapToTokenTypes = (value: string): string => {
-  const tokenTypes = value?.split(' ').map((x) => {
-    const tokenType = tokenTypeMap[x];
-    return tokenType ? tokenType : x;
-  }).join('|');
+  const tokenTypes = value
+    ?.split(' ')
+    .map((x) => {
+      const tokenType = tokenTypeMap[x];
+      return tokenType ? tokenType : x;
+    })
+    .join('|');
   return tokenTypes ? `<${tokenTypes}>` : null;
-}
+};
 
 const parseTokens = (robot: string): string[] => {
   editor.setValue(robot);
@@ -49,8 +52,10 @@ const parseTokens = (robot: string): string[] => {
   const lineCount = editor.lineCount();
   const lines: string[] = [];
   for (let line = 0; line < lineCount; line++) {
-    editor.setCursor({line: line, ch: 0});
-    const nodes = body.querySelector('.CodeMirror-scroll .CodeMirror-line span').childNodes;
+    editor.setCursor({ line: line, ch: 0 });
+    const nodes = body.querySelector(
+      '.CodeMirror-scroll .CodeMirror-line span'
+    ).childNodes;
     const spans: any[] = [];
     nodes.forEach((x) => spans.push(x));
     const allTokens = spans.map((span) => ({
@@ -63,10 +68,10 @@ const parseTokens = (robot: string): string[] => {
     lines.push([`#${line}`, ...tokens].join(' '));
   }
   return lines;
-}
+};
 
 defineRobotMode({ CodeMirror } as any);
-document.body.innerHTML = `<textarea id='code' />`
+document.body.innerHTML = `<textarea id='code' />`;
 const codeElement = document.getElementById('code') as HTMLTextAreaElement;
 const editor = CodeMirror.fromTextArea(codeElement, { mode: MODE_NAME });
 

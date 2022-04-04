@@ -1,12 +1,13 @@
 # MarketSquare jupyterlab_robotmode
 
-[![binder-badge]][binder] [![pypi-badge]][pypi] [![conda-badge]][conda] [![npm-badge]][npm]
+[![binder-badge]][binder] [![pypi-badge]][pypi] [![conda-badge]][conda]
+[![npm-badge]][npm]
 
 A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax
 
 ## Prerequisites
 
-* JupyterLab
+- JupyterLab
 
 ## Installation
 

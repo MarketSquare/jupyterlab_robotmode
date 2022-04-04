@@ -23,5 +23,5 @@
     "rootDir": "./src"
   },
   "files": ["node_modules/@jupyterlab/codemirror/typings/codemirror/codemirror.d.ts"],
-  "include": ["src/**/*"],
+  "include": ["src/**/*"]
 }

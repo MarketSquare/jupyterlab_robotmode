@@ -5,16 +5,13 @@
 
 /// <reference path="../node_modules/@jupyterlab/codemirror/typings/codemirror/codemirror.d.ts" />
 
-import {
-  JupyterFrontEnd, JupyterFrontEndPlugin
-} from '@jupyterlab/application';
+import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
 
 import { ICodeMirror } from '@jupyterlab/codemirror';
 
 import { PLUGIN_ID } from '.';
 
 import { defineRobotMode } from './mode';
-
 
 /**
  * Initialization data for the jupyterlab_robotmode extension.
