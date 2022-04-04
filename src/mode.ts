@@ -28,8 +28,11 @@ export type TState =
   | 'keyword_invocation_no_continue'
   | 'library'
   | 'if_start'
-  | 'else_if_start'
-  | 'else_start'
+  | 'try_start'
+  | 'try_else_start'
+  | 'finally_start'
+  | 'if_else_if_start'
+  | 'if_else_start'
   | 'loop_body_old'
   | 'loop_start_new'
   | 'loop_start_old'
@@ -281,31 +284,55 @@ const RULE_KEY_START_PIPE = r(
     sol: true,
   }
 );
+
 /** rule for for old-style loops (slashes) */
 const RULE_START_LOOP_OLD = r(/(\s\|*\s*)(:FOR)(\s\|*\s*)/, [null, TT.AM, null], {
   push: 'loop_start_old',
   sol: true,
 });
+
 /** rule for for new-style loops (slashes) */
 const RULE_START_LOOP_NEW = r(/(\s\|*\s*)(FOR)(\s\|*\s*)/, [null, TT.AM, null], {
   push: 'loop_start_new',
   sol: true,
 });
+
 /** rule for if keyword */
 const RULE_START_IF = r(/(\s\|*\s*)(IF)(\s\|*\s*)/, [null, TT.AM, null], {
   push: 'if_start',
   sol: true,
 });
-/** rule for else if keyword */
-const RULE_START_ELSE_IF = r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, null], {
-  next: 'else_if_start',
+
+/** rule for try keyword */
+const RULE_START_TRY = r(/(\s\|*\s*)(TRY)/, [null, TT.AM], {
+  push: 'try_start',
   sol: true,
 });
+
 /** rule for else keyword */
-const RULE_START_ELSE = r(/(\s\|*\s*)(ELSE)/, [null, TT.AM], {
-  next: 'else_start',
+const RULE_START_TRY_ELSE = r(/(\s\|*\s*)(ELSE)/, [null, TT.AM], {
+  next: 'try_else_start',
   sol: true,
 });
+
+/** rule for try keyword */
+const RULE_START_FINALLY = r(/(\s\|*\s*)(FINALLY)/, [null, TT.AM], {
+  push: 'finally_start',
+  sol: true,
+});
+
+/** rule for else if keyword */
+const RULE_START_IF_ELSE_IF = r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, null], {
+  next: 'if_else_if_start',
+  sol: true,
+});
+
+/** rule for else keyword */
+const RULE_START_IF_ELSE = r(/(\s\|*\s*)(ELSE)/, [null, TT.AM], {
+  next: 'if_else_start',
+  sol: true,
+});
+
 /** rule for end keyword */
 const RULE_END = r(/([\|\s]*\s*)(END)/, [null, TT.AM], {
   sol: true,
@@ -375,6 +402,7 @@ states.keywords = [
   RULE_START_LOOP_OLD,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
+  RULE_START_TRY,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
   ...base,
@@ -411,6 +439,7 @@ states.loop_start_new = [
   RULE_VAR_END,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
+  RULE_START_TRY,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
@@ -424,32 +453,80 @@ states.if_start = [
   RULE_VAR_END,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
-  RULE_START_ELSE_IF,
-  RULE_START_ELSE,
+  RULE_START_IF_ELSE_IF,
+  RULE_START_IF_ELSE,
+  RULE_START_TRY,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
   ...base,
 ];
 
-states.else_if_start = [
+states.try_start = [
   r(/[.]{3}/, TT.BK),
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
   RULE_VAR_END,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
-  RULE_START_ELSE_IF,
-  RULE_START_ELSE,
+  RULE_START_TRY,
+  RULE_START_TRY_ELSE,
+  RULE_START_FINALLY,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
   ...base,
 ];
 
-states.else_start = [
+states.try_else_start = [
+  r(/[.]{3}/, TT.BK),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
+  RULE_START_TRY,
+  RULE_START_FINALLY,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.finally_start = [
+  r(/[.]{3}/, TT.BK),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_TRY,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.if_else_if_start = [
+  r(/[.]{3}/, TT.BK),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_TRY,
+  RULE_START_IF_ELSE_IF,
+  RULE_START_IF_ELSE,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.if_else_start = [
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_TRY,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
@@ -507,6 +584,7 @@ states.test_cases = [
   RULE_START_LOOP_OLD,
   RULE_START_LOOP_NEW,
   RULE_START_IF,
+  RULE_START_TRY,
   r(/([^|\s*].+?)(?=(\t|  +|$))/, TT.SH, { sol: true }),
   ...RULES_KEYWORD_INVOKING,
   r(/(\|\s+)([^\s*\|\.][^\|]*?)(\s*)(\|?$)/, [TT.BK, TT.SH, TT.BK], {
