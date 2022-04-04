@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
+jlpm --prefer-offline --ignore-optional
 python -m pip install -e . --ignore-installed --no-deps
 jupyter labextension list
