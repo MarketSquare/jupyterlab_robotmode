@@ -11,21 +11,23 @@
     "@jupyterlab/codemirror": "^3.0.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.8",
-    "@babel/preset-env": "^7.13.9",
+    "@babel/core": "^7.17.8",
+    "@babel/preset-env": "^7.16.11",
     "@jupyterlab/builder": "^3.2.4",
     "@types/codemirror": "^0.0.97",
-    "@types/jest": "^26.0.20",
+    "@types/jest": "^27.4.1",
     "@types/jsdom": "^16.2.6",
     "@types/node": "^14.14.31",
-    "babel-jest": "^26.6.3",
+    "babel-jest": "^27.5.1",
     "cross-env": "^7.0.2",
-    "jest": "^26.6.3",
+    "jest": "^27.5.1",
     "jest-fetch-mock": "^3.0.3",
     "npm-run-all": "^4.1.5",
+    "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
-    "ts-jest": "^26.5.3",
-    "typescript": "~4.2.3"
+    "ts-jest": "^27.1.4",
+    "typescript": "~4.6.3",
+    "yarn-deduplicate": "^4.0.0"
   },
   "files": [
     "{lib,style}/**/*.{css,d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}"
@@ -50,20 +52,28 @@
     "build": "jlpm run build:lib && jlpm run build:labextension:dev",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
-    "build:lib": "tsc",
+    "build:lib": "tsc -b",
     "build:prod": "jlpm run build:lib && jlpm run build:labextension",
     "clean": "jlpm run clean:lib",
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
     "clean:labextension": "rimraf marketsquare_jupyterlab_robotmode/labextension",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
+    "deduplicate": "yarn-deduplicate -s fewer --fail || yarn-deduplicate -s fewer --fail || yarn-deduplicate -s fewer --fail",
     "install:extension": "jupyter labextension develop --overwrite .",
     "package": "npm pack",
-    "prepare": "jlpm run clean && jlpm run build:prod",
     "prepublishOnly": "cross-env NODE_ENV=production npm run build",
+    "prettier:fix": "jlpm prettier:base --list-different --write",
+    "prettier:base": "prettier \"*.{json,md,js,yml}\" \"{.github,src,tests,.binder}/**/*.{yml,json,ts,tsx,css,md,yaml}\"",
+    "prettier:check": "jlpm prettier:base --check",
     "watch": "run-p watch:src watch:labextension",
     "watch:labextension": "jupyter labextension watch .",
-    "watch:src": "tsc -w",
+    "watch:src": "tsc -b -w",
     "test": "jest"
   },
-  "types": "lib/index.d.ts"
+  "types": "lib/index.d.ts",
+  "prettier": {
+    "singleQuote": true,
+    "proseWrap": "always",
+    "printWidth": 88
+  }
 }

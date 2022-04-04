@@ -19,7 +19,8 @@
     "noUnusedLocals": true,
     "outDir": "./lib",
     "target": "ES2020",
-    "types": []
+    "types": [],
+    "rootDir": "./src"
   },
   "files": ["node_modules/@jupyterlab/codemirror/typings/codemirror/codemirror.d.ts"],
   "include": ["src/**/*"],
