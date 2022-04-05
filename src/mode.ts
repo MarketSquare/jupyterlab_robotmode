@@ -15,7 +15,9 @@
 
 import { ICodeMirror } from '@jupyterlab/codemirror';
 
-import { ISimpleState, TSimpleStates, ISimpleMeta } from 'codemirror';
+import type { ISimpleState, TSimpleStates, ISimpleMeta } from 'codemirror';
+
+import { MIME_TYPE, MODE_LABEL, MODE_NAME, EXTENSIONS } from './tokens';
 
 /** All the possible states: pushing non-existing states == bad */
 export type TMainState = 'test_cases' | 'keywords' | 'settings' | 'variables';
@@ -698,17 +700,6 @@ states.variable_index = [
   r(/\]/, TT.BK, { pop: true }),
   r(/[^\]]/, TT.ST),
 ];
-
-/** well-known mime type for robot framework (pygments, etc.) */
-export const MIME_TYPE = 'text/x-robotframework';
-/** the canonical CodeMirror mode name */
-export const MODE_NAME = 'robotframework';
-/** the human-readable name of the CodeMirror mode */
-export const MODE_LABEL = 'robotframework';
-/** primary file extension */
-export const DEFAULT_EXTENSION = 'robot';
-/** all recognized file extensions */
-export const EXTENSIONS = [DEFAULT_EXTENSION, 'resource'];
 
 /** the actual exported function that will install the mode in CodeMirror */
 export function defineRobotMode({ CodeMirror }: ICodeMirror) {
