@@ -30,6 +30,7 @@ export type TState =
   | 'if_start'
   | 'try_start'
   | 'try_else_start'
+  | 'try_except_start'
   | 'finally_start'
   | 'if_else_if_start'
   | 'if_else_start'
@@ -210,7 +211,7 @@ const base = [
     /([^\s\$@&%=]((?!\t+|\s+\|\s+|  +)([^=]|\\=))*?)(?==($|  |[^=]|\s+\||\t))/,
     TT.AT
   ),
-  r(/[^\s]+:(?!\/)/, TT.OP),
+  // r(/[^\s]+:(?!\/)/, TT.OP),  // this was generating false positives with TRY
   r(/(=!<>+\-*\/%)*==?/, TT.OP),
   r(/_\*.*?\*_/, TT.SSE),
   r(/\*.*?\*/, TT.SS),
@@ -257,7 +258,6 @@ states.library = [
       pop: true,
     }
   ),
-  // r(/[^\}\|\s]*$/, TT.ST, { pop: true }),
   ...base,
 ];
 
@@ -302,25 +302,6 @@ const RULE_START_IF = r(/(\s\|*\s*)(IF)(\s\|*\s*)/, [null, TT.AM, null], {
   push: 'if_start',
   sol: true,
 });
-
-/** rule for try keyword */
-const RULE_START_TRY = r(/(\s\|*\s*)(TRY)/, [null, TT.AM], {
-  push: 'try_start',
-  sol: true,
-});
-
-/** rule for else keyword */
-const RULE_START_TRY_ELSE = r(/(\s\|*\s*)(ELSE)/, [null, TT.AM], {
-  next: 'try_else_start',
-  sol: true,
-});
-
-/** rule for try keyword */
-const RULE_START_FINALLY = r(/(\s\|*\s*)(FINALLY)/, [null, TT.AM], {
-  push: 'finally_start',
-  sol: true,
-});
-
 /** rule for else if keyword */
 const RULE_START_IF_ELSE_IF = r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, null], {
   next: 'if_else_if_start',
@@ -328,13 +309,37 @@ const RULE_START_IF_ELSE_IF = r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, n
 });
 
 /** rule for else keyword */
-const RULE_START_IF_ELSE = r(/(\s\|*\s*)(ELSE)/, [null, TT.AM], {
+const RULE_START_IF_ELSE = r(/(\s\|*\s*)(ELSE)(?=$)/, [null, TT.AM], {
   next: 'if_else_start',
   sol: true,
 });
 
+/** rule for try keyword */
+const RULE_START_TRY = r(/(\s\|*\s*)(TRY)(?=$)/, [null, TT.AM], {
+  push: 'try_start',
+  sol: true,
+});
+
+/** rule for simple try/except */
+const RULE_START_EXCEPT = r(/(\s\|*\s*)(EXCEPT)/, [null, TT.AM], {
+  next: 'try_except_start',
+  sol: true,
+});
+
+/** rule for try/else keyword */
+const RULE_START_TRY_ELSE = r(/(\s\|*\s*)(ELSE)(?=$)/, [null, TT.AM], {
+  next: 'try_else_start',
+  sol: true,
+});
+
+/** rule for try/finally keyword */
+const RULE_START_FINALLY = r(/(\s\|*\s*)(FINALLY)/, [null, TT.AM], {
+  next: 'finally_start',
+  sol: true,
+});
+
 /** rule for end keyword */
-const RULE_END = r(/([\|\s]*\s*)(END)/, [null, TT.AM], {
+const RULE_END = r(/([\|\s]*\s*)(END)(?=$)/, [null, TT.AM], {
   sol: true,
   pop: true,
 });
@@ -462,51 +467,6 @@ states.if_start = [
   ...base,
 ];
 
-states.try_start = [
-  r(/[.]{3}/, TT.BK),
-  RULE_VAR_START,
-  r(/\}(?=$)/, TT.V2),
-  RULE_VAR_END,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
-  RULE_START_TRY_ELSE,
-  RULE_START_FINALLY,
-  RULE_END,
-  RULE_WS_LINE,
-  ...RULES_KEYWORD_INVOKING,
-  ...base,
-];
-
-states.try_else_start = [
-  r(/[.]{3}/, TT.BK),
-  RULE_VAR_START,
-  r(/\}(?=$)/, TT.V2),
-  RULE_VAR_END,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
-  RULE_START_FINALLY,
-  RULE_END,
-  RULE_WS_LINE,
-  ...RULES_KEYWORD_INVOKING,
-  ...base,
-];
-
-states.finally_start = [
-  r(/[.]{3}/, TT.BK),
-  RULE_VAR_START,
-  r(/\}(?=$)/, TT.V2),
-  RULE_VAR_END,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
-  RULE_END,
-  RULE_WS_LINE,
-  ...RULES_KEYWORD_INVOKING,
-  ...base,
-];
-
 states.if_else_if_start = [
   r(/[.]{3}/, TT.BK),
   RULE_VAR_START,
@@ -524,6 +484,59 @@ states.if_else_if_start = [
 ];
 
 states.if_else_start = [
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_TRY,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.try_start = [
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_TRY,
+  RULE_START_EXCEPT,
+  RULE_START_TRY_ELSE,
+  RULE_START_FINALLY,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.try_except_start = [
+  r(/[.]{3}/, TT.BK),
+  r(/AS/, TT.AM),
+  r(/(glob|regexp):/i, TT.BI),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_TRY,
+  RULE_START_EXCEPT,
+  RULE_START_TRY_ELSE,
+  RULE_START_FINALLY,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.try_else_start = [
+  RULE_START_LOOP_NEW,
+  RULE_START_IF,
+  RULE_START_TRY,
+  RULE_START_FINALLY,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.finally_start = [
   RULE_START_LOOP_NEW,
   RULE_START_IF,
   RULE_START_TRY,
