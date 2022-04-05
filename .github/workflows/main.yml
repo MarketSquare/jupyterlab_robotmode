@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache conda
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ~/conda_pkgs_dir
           key: |
@@ -31,7 +31,7 @@ jobs:
           restore-keys: ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-
 
       - name: Cache JS
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: |
@@ -58,7 +58,7 @@ jobs:
         run: cd dist && sha256sum * | tee SHA256SUMS
 
       - name: Upload Distributions
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: jupyterlab_robotmode dist ${{ github.run_number }}
           path: ./dist
@@ -93,12 +93,12 @@ jobs:
 
     steps:
       - name: Install Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Download Distributions
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: jupyterlab_robotmode dist ${{ github.run_number }}
           path: ./dist
@@ -116,7 +116,7 @@ jobs:
           echo "::set-output name=dir::$(${{ matrix.py-cmd }} -m pip cache dir)"
 
       - name: Cache Python Dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.cache-pip.outputs.dir }}
           key: |
