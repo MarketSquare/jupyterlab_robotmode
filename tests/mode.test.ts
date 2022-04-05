@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import fs from 'fs';
 import { join, basename, extname } from 'path';
 import CodeMirror from 'codemirror';

@@ -14,10 +14,14 @@ module.exports = {
   clearMocks: true,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transformIgnorePatterns: ['<rootDir>/node_modules/(?!(@jupyterlab/.*)/)'],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/lib/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/jupyterlab_robotmode/',
+    '<rootDir>/lib/',
+    '<rootDir>/node_modules/',
+  ],
   globals: {
     'ts-jest': {
-      tsconfig: 'tsconfig.json',
+      tsconfig: '<rootDir>/tests/tsconfig.json',
     },
   },
 };
