@@ -156,3 +156,29 @@ Array [
   "#64",
 ]
 `;
+
+exports[`02-while 1`] = `
+Array [
+  "#0 <header>: *** Test Cases ***",
+  "#1 <string|header>: Loop as long as condition is True",
+  "#2 <atom>: WHILE <variable2>: \${x} <string>: &gt; <string>: 0",
+  "#3 <keyword>: Log <variable2>: \${x}",
+  "#4 <variable2>: \${x} <operator>: = <keyword>: Evaluate <variable2>: \${x} <string>: - <string>: 1",
+  "#5 <atom>: END",
+  "#6",
+  "#7 <string|header>: Limit as iteration count",
+  "#8 <atom>: WHILE <string>: True <attribute>: limit <operator>: = <string>: 100",
+  "#9 <keyword>: Log <string>: This <string>: is <string>: run <string>: 100 <string>: times.",
+  "#10 <atom>: END",
+  "#11",
+  "#12 <string|header>: Limit as time",
+  "#13 <atom>: WHILE <string>: True <attribute>: limit <operator>: = <string>: 10 <string>: seconds",
+  "#14 <keyword>: Log <string>: This <string>: is <string>: run <string>: 10 <string>: seconds.",
+  "#15 <atom>: END",
+  "#16",
+  "#17 <string|header>: No limit",
+  "#18 <atom>: WHILE <string>: True <attribute>: limit <operator>: = <string>: NONE",
+  "#19 <keyword>: Log <string>: This <string>: must <string>: be <string>: forcefully <string>: stopped.",
+  "#20 <atom>: END",
+]
+`;

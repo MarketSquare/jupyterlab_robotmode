@@ -72,10 +72,6 @@ export enum TT {
   V2 = 'variable-2',
 }
 
-export function LINK(token: TT): TT {
-  return (token + '.link') as any;
-}
-
 /** helper function for compactly representing a rule */
 function r(
   regex: RegExp,
