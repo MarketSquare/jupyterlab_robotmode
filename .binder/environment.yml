@@ -5,8 +5,8 @@ channels:
   - nodefaults
 
 dependencies:
-  - jupyter-packaging >=0.11.1,<0.12
-  - jupyterlab >=3.2,<4
+  - jupyter-packaging >=0.12
+  - jupyterlab >=3.3,<4
   - nodejs >=14,!=15.*,<17
   - pip
   - python
