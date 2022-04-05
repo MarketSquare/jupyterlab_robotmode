@@ -7,7 +7,9 @@ import { join, basename, extname } from 'path';
 import CodeMirror from 'codemirror';
 import 'codemirror/mode/meta';
 import 'codemirror/addon/mode/simple';
-import { defineRobotMode, MODE_NAME } from '../src/mode';
+
+import { MODE_NAME } from '../src/tokens';
+import { defineRobotMode } from '../src/mode';
 
 const fixtureDir = join(__dirname, `${basename(__filename, '.ts')}.fixtures`);
 const fixtures = fs
