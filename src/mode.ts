@@ -23,27 +23,28 @@ export type TState =
   | TMainState
   | 'comment'
   | 'double_string'
-  | 'keyword_def'
-  | 'keyword_invocation'
-  | 'keyword_invocation_no_continue'
-  | 'library'
-  | 'if_start'
-  | 'try_start'
-  | 'try_else_start'
-  | 'try_except_start'
-  | 'finally_start'
   | 'if_else_if_start'
   | 'if_else_start'
+  | 'if_start'
+  | 'keyword_def'
+  | 'keyword_invocation_no_continue'
+  | 'keyword_invocation'
+  | 'library'
   | 'loop_body_old'
   | 'loop_start_new'
   | 'loop_start_old'
   | 'single_string'
   | 'start'
-  | 'tags'
   | 'tags_comma'
+  | 'tags'
+  | 'try_else_start'
+  | 'try_except_start'
+  | 'try_finally_start'
+  | 'try_start'
   | 'variable_index'
   | 'variable_property'
-  | 'variable';
+  | 'variable'
+  | 'while_start';
 
 /** the tokens we use */
 export enum TT {
@@ -302,6 +303,7 @@ const RULE_START_IF = r(/(\s\|*\s*)(IF)(\s\|*\s*)/, [null, TT.AM, null], {
   push: 'if_start',
   sol: true,
 });
+
 /** rule for else if keyword */
 const RULE_START_IF_ELSE_IF = r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, null], {
   next: 'if_else_if_start',
@@ -334,7 +336,12 @@ const RULE_START_TRY_ELSE = r(/(\s\|*\s*)(ELSE)(?=$)/, [null, TT.AM], {
 
 /** rule for try/finally keyword */
 const RULE_START_FINALLY = r(/(\s\|*\s*)(FINALLY)/, [null, TT.AM], {
-  next: 'finally_start',
+  next: 'try_finally_start',
+  sol: true,
+});
+
+const RULE_START_WHILE = r(/(\s\|*\s*)(WHILE)/, [null, TT.AM], {
+  push: 'while_start',
   sol: true,
 });
 
@@ -396,6 +403,15 @@ const RULE_SETTING_SIMPLE_PIPE = r(
   { sol: true }
 );
 
+/** rules for starting control flow blocks */
+const RULES_CONTROL_FLOW = [
+  RULE_START_LOOP_OLD,
+  RULE_START_LOOP_NEW,
+  RULE_START_WHILE,
+  RULE_START_IF,
+  RULE_START_TRY,
+];
+
 /** rules for data rows inside a keyword table */
 states.keywords = [
   RULE_ELLIPSIS,
@@ -404,10 +420,7 @@ states.keywords = [
   RULE_SETTING_SIMPLE,
   RULE_SETTING_SIMPLE_PIPE,
   r(/(?=[^\s$&%@*|]+)/, null, { sol: true, push: 'keyword_def' }),
-  RULE_START_LOOP_OLD,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
   ...base,
@@ -442,9 +455,7 @@ states.loop_start_new = [
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
   RULE_VAR_END,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
@@ -456,11 +467,9 @@ states.if_start = [
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
   RULE_VAR_END,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
+  ...RULES_CONTROL_FLOW,
   RULE_START_IF_ELSE_IF,
   RULE_START_IF_ELSE,
-  RULE_START_TRY,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
@@ -472,9 +481,7 @@ states.if_else_if_start = [
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
   RULE_VAR_END,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   RULE_START_IF_ELSE_IF,
   RULE_START_IF_ELSE,
   RULE_END,
@@ -484,9 +491,7 @@ states.if_else_if_start = [
 ];
 
 states.if_else_start = [
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
@@ -494,9 +499,7 @@ states.if_else_start = [
 ];
 
 states.try_start = [
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   RULE_START_EXCEPT,
   RULE_START_TRY_ELSE,
   RULE_START_FINALLY,
@@ -513,9 +516,7 @@ states.try_except_start = [
   RULE_VAR_START,
   r(/\}(?=$)/, TT.V2),
   RULE_VAR_END,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   RULE_START_EXCEPT,
   RULE_START_TRY_ELSE,
   RULE_START_FINALLY,
@@ -526,9 +527,7 @@ states.try_except_start = [
 ];
 
 states.try_else_start = [
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   RULE_START_FINALLY,
   RULE_END,
   RULE_WS_LINE,
@@ -536,10 +535,22 @@ states.try_else_start = [
   ...base,
 ];
 
-states.finally_start = [
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+states.try_finally_start = [
+  ...RULES_CONTROL_FLOW,
+  RULE_END,
+  RULE_WS_LINE,
+  ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+states.while_start = [
+  r(/[.]{3}/, TT.BK),
+  r(/AS/, TT.AM),
+  r(/(glob|regexp):/i, TT.BI),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  ...RULES_CONTROL_FLOW,
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
@@ -594,10 +605,7 @@ states.test_cases = [
   RULE_SETTING_KEYWORD,
   RULE_CASE_SETTING_SIMPLE,
   RULE_CASE_SETTING_SIMPLE_PIPE,
-  RULE_START_LOOP_OLD,
-  RULE_START_LOOP_NEW,
-  RULE_START_IF,
-  RULE_START_TRY,
+  ...RULES_CONTROL_FLOW,
   r(/([^|\s*].+?)(?=(\t|  +|$))/, TT.SH, { sol: true }),
   ...RULES_KEYWORD_INVOKING,
   r(/(\|\s+)([^\s*\|\.][^\|]*?)(\s*)(\|?$)/, [TT.BK, TT.SH, TT.BK], {
