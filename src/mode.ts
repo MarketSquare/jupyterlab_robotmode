@@ -399,8 +399,15 @@ const RULE_SETTING_SIMPLE_PIPE = r(
   { sol: true }
 );
 
+/** rule for atomic control flow */
+const RULE_CONTROL_FLOW_ATOM = r(/(\s\|*\s*)(BREAK|CONTINUE|RETURN)(?=\s\|*\s*|$)/, [
+  null,
+  TT.AM,
+]);
+
 /** rules for starting control flow blocks */
 const RULES_CONTROL_FLOW = [
+  RULE_CONTROL_FLOW_ATOM,
   RULE_START_LOOP_OLD,
   RULE_START_LOOP_NEW,
   RULE_START_WHILE,

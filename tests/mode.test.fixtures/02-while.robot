@@ -15,6 +15,19 @@ Limit as time
         Log    This is run 10 seconds.
     END
 
+*** Keywords ***
+Example
+    FOR    ${x}    IN RANGE    1000
+        IF    ${x} > 10    
+            BREAK
+        END
+        Log    Executed only when ${x} < 11
+        IF    ${x} % 2 == 0    
+            CONTINUE
+        END
+        Log    Executed only when ${x} is odd.
+    END
+
 No limit
     WHILE    True    limit=NONE
         Log    This must be forcefully stopped.
