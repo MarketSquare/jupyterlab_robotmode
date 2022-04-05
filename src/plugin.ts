@@ -13,9 +13,9 @@ import {
   MODE_LABEL,
   PLUGIN_ID,
   RESOURCE_EXTENSION,
-  robotIcon,
-  resourceIcon,
 } from './tokens';
+
+import { robotIcon, resourceIcon } from './icons';
 
 import { defineRobotMode } from './mode';
 
