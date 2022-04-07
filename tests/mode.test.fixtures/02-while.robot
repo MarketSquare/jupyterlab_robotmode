@@ -18,13 +18,9 @@ Limit as time
 *** Keywords ***
 Example
     FOR    ${x}    IN RANGE    1000
-        IF    ${x} > 10    
-            BREAK
-        END
+        IF    ${x} > 10    BREAK
         Log    Executed only when ${x} < 11
-        IF    ${x} % 2 == 0    
-            CONTINUE
-        END
+        IF    ${x} % 2 == 0    CONTINUE
         Log    Executed only when ${x} is odd.
     END
 

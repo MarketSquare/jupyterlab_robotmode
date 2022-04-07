@@ -15,9 +15,17 @@
 
 import { ICodeMirror } from '@jupyterlab/codemirror';
 
-import type { ISimpleState, TSimpleStates, ISimpleMeta } from 'codemirror';
+import type { ISimpleState, ISimpleMeta } from 'codemirror';
 
 import { MIME_TYPE, MODE_LABEL, MODE_NAME, EXTENSIONS } from './tokens';
+
+/** Our custom state. */
+type TRobotState = ISimpleState<TState, TT>;
+
+/** Our overall states */
+export type TRobotStates = {
+  [key in TState]: TRobotState[];
+};
 
 /** All the possible states: pushing non-existing states == bad */
 export type TMainState = 'test_cases' | 'keywords' | 'settings' | 'variables';
@@ -28,6 +36,11 @@ export type TState =
   | 'if_else_if_start'
   | 'if_else_start'
   | 'if_start'
+  | 'inline_if_start'
+  | 'inline_if_keyword_invoking'
+  | 'inline_if_start_keyword'
+  | 'inline_if_start_else'
+  | 'inline_if_else_keyword_invoking'
   | 'keyword_def'
   | 'keyword_invocation_no_continue'
   | 'keyword_invocation'
@@ -75,11 +88,7 @@ export enum TT {
 }
 
 /** helper function for compactly representing a rule */
-function r(
-  regex: RegExp,
-  token?: TT | TT[],
-  opt?: Partial<ISimpleState<TState, TT>>
-): ISimpleState<TState, TT> {
+function r(regex: RegExp, token?: TT | TT[], opt?: Partial<TRobotState>): TRobotState {
   return { regex, token, ...opt };
 }
 
@@ -187,7 +196,7 @@ const RULE_NOT_ELLIPSIS_POP = r(/(?!\s*(\\|\.\.\.))/, null, {
 const RULE_DOC_TAGS = r(/(Tags:)(\s*)/i, [TT.MT, null], { push: 'tags_comma' });
 
 /** collects the states that we build */
-const states: Partial<TSimpleStates> = {};
+const states: Partial<TRobotStates> = {};
 
 /** base isn't a state. these are the "normal business" that any state might use */
 const base = [
@@ -296,11 +305,29 @@ const RULE_START_LOOP_NEW = r(/(\s\|*\s*)(FOR)(\s\|*\s*)/, [null, TT.AM, null], 
   sol: true,
 });
 
+/** rule for inline if keyword */
+const RULE_START_INLINE_IF = r(
+  /(\s*)(IF)(\s\|*\s*)(?=[^\s].*\s{2,})/,
+  [null, TT.AM as any, null],
+  { push: 'inline_if_start', sol: true }
+);
+
+/** rule for inline if keyword with assignment */
+const RULE_START_INLINE_IF_VAR = r(
+  /(\s+)(.*?)(\s+)(=)(\s+)(IF)(\s\|*\s*)(?=[^\s].*\s{2,})/,
+  [null, TT.V2, null, TT.OP, null, TT.AM as any, null],
+  { push: 'inline_if_start', sol: true }
+);
+
 /** rule for if keyword */
-const RULE_START_IF = r(/(\s\|*\s*)(IF)(\s\|*\s*)/, [null, TT.AM, null], {
-  push: 'if_start',
-  sol: true,
-});
+const RULE_START_IF = r(
+  /(\s\|*\s*)(IF)(\s\|*\s*)(?![^\s].*\s{2,})/,
+  [null, TT.AM, null],
+  {
+    push: 'if_start',
+    sol: true,
+  }
+);
 
 /** rule for else if keyword */
 const RULE_START_IF_ELSE_IF = r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, null], {
@@ -402,9 +429,9 @@ const RULE_SETTING_SIMPLE_PIPE = r(
 );
 
 /** rule for atomic control flow */
-const RULE_CONTROL_FLOW_ATOM = r(/(\s\|*\s*)(BREAK|CONTINUE|RETURN)(?=\s\|*\s*|$)/, [
-  null,
+const RULE_CONTROL_FLOW_ATOM = r(/(BREAK|CONTINUE|RETURN)([\s\|]{2,}|$)/, [
   TT.AM,
+  null,
 ]);
 
 /** rules for starting control flow blocks */
@@ -413,6 +440,8 @@ const RULES_CONTROL_FLOW = [
   RULE_START_LOOP_OLD,
   RULE_START_LOOP_NEW,
   RULE_START_WHILE,
+  RULE_START_INLINE_IF_VAR,
+  RULE_START_INLINE_IF,
   RULE_START_IF,
   RULE_START_TRY,
 ];
@@ -464,6 +493,62 @@ states.loop_start_new = [
   RULE_END,
   RULE_WS_LINE,
   ...RULES_KEYWORD_INVOKING,
+  ...base,
+];
+
+/** the state when in an (ELSE)IF predictate */
+states.inline_if_start = [
+  RULE_ELLIPSIS,
+  r(/[\s\|]{2,}/, null, { next: 'inline_if_start_keyword' }),
+  RULE_NOT_ELLIPSIS_POP,
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  ...base,
+];
+
+/** the state when in an ELSE( IF) object */
+states.inline_if_start_keyword = [
+  RULE_ELLIPSIS,
+  RULE_CONTROL_FLOW_ATOM,
+  RULE_NOT_ELLIPSIS_POP,
+  r(KEYWORD_WORD_BEFORE_VAR, TT.KW, { next: 'inline_if_keyword_invoking' }),
+  r(KEYWORD_WORD_WITH_SPACES_BEFORE_SEP, TT.KW, { next: 'inline_if_keyword_invoking' }),
+  r(KEYWORD_WORD_BEFORE_SEP, TT.KW, { next: 'inline_if_keyword_invoking' }),
+  r(KEYWORD_WORD_BEFORE_WS, TT.KW, { next: 'inline_if_keyword_invoking' }),
+];
+
+/** the state when in an ELSE( IF) object */
+states.inline_if_keyword_invoking = [
+  RULE_ELLIPSIS,
+  RULE_NOT_ELLIPSIS_POP,
+  r(/(\s\|*\s*)(ELSE IF)(\s\|*\s*)/, [null, TT.AM, null], { next: 'inline_if_start' }),
+  r(/(\s\|*\s*)(ELSE)(\s\|*\s*)/, [null, TT.AM, null], {
+    next: 'inline_if_start_else',
+  }),
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
+  ...base,
+];
+
+states.inline_if_start_else = [
+  RULE_ELLIPSIS,
+  r(KEYWORD_WORD_BEFORE_VAR, TT.KW, { next: 'inline_if_else_keyword_invoking' }),
+  r(KEYWORD_WORD_WITH_SPACES_BEFORE_SEP, TT.KW, {
+    next: 'inline_if_else_keyword_invoking',
+  }),
+  r(KEYWORD_WORD_BEFORE_SEP, TT.KW, { next: 'inline_if_else_keyword_invoking' }),
+  r(KEYWORD_WORD_BEFORE_WS, TT.KW, { next: 'inline_if_else_keyword_invoking' }),
+  ...base,
+];
+
+states.inline_if_else_keyword_invoking = [
+  RULE_ELLIPSIS,
+  RULE_NOT_ELLIPSIS_POP,
+  RULE_VAR_START,
+  r(/\}(?=$)/, TT.V2),
+  RULE_VAR_END,
   ...base,
 ];
 
@@ -626,7 +711,7 @@ states.test_cases = [
 states.keyword_invocation = [
   r(/( ?)(=)(\t+|  +|\s+\|)/, [null, TT.OP, null]),
   r(/(?=\s*$)/, null, { pop: true }),
-  r(/(\\|\.\.\.) +/, TT.BK, { pop: true }),
+  r(/(\\|\.\.\.) +/, TT.BK),
   RULE_VAR_START,
   RULE_LINE_ENDS_WITH_VAR,
   RULE_VAR_END,
