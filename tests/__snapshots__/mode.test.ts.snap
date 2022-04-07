@@ -201,7 +201,7 @@ Array [
   "#3 <keyword>: Keyword <string>: argument",
   "#4 <atom>: END",
   "#5 <atom>: IF <string>: $condition2",
-  "#6 <keyword>: RETURN",
+  "#6 <atom>: RETURN",
   "#7 <atom>: END",
   "#8",
   "#9 <cm-def>: Inline <cm-def>: IF",
@@ -225,5 +225,27 @@ Array [
   "#27 <cm-def>: Inline <cm-def>: IF/ELSE <cm-def>: with <cm-def>: assignment <cm-def>: having <cm-def>: multiple <cm-def>: variables",
   "#28 <variable2>: \${host}    \${port} <operator>: = <atom>: IF <string>: $production <keyword>: Get Production Config <atom>: ELSE <keyword>: Get Testing Config <string>: fooo",
   "#29 <keyword>: Log <string>: 4",
+]
+`;
+
+exports[`04-return 1`] = `
+Array [
+  "#0 <header>: *** Keywords ***",
+  "#1 <cm-def>: Return <cm-def>: at <cm-def>: the <cm-def>: end",
+  "#2 <keyword>: Some Keyword",
+  "#3 <variable2>: \${result} <operator>: = <keyword>: Another Keyword",
+  "#4 <atom>: RETURN <variable2>: \${result}",
+  "#5",
+  "#6 <cm-def>: Return <cm-def>: conditionally",
+  "#7 <atom>: IF <variable2>: \${condition}",
+  "#8 <atom>: RETURN <string>: Something",
+  "#9 <atom>: ELSE",
+  "#10 <atom>: RETURN <string>: Something <string>: else",
+  "#11 <atom>: END",
+  "#12",
+  "#13 <cm-def>: Early <cm-def>: return",
+  "#14 <atom>: IF <variable2>: \${not applicable} <atom>: RETURN",
+  "#15 <keyword>: Some Keyword",
+  "#16 <keyword>: Another Keyword",
 ]
 `;
