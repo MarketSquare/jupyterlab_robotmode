@@ -46,7 +46,7 @@ jobs:
           use-only-tar-bz2: true
 
       - name: Build Python packages
-        run: python setup.py sdist bdist_wheel
+        run: pyproject-build --sdist --wheel
 
       - name: Check built packages
         run: twine check dist/*
@@ -106,7 +106,7 @@ jobs:
       - name: Install Setup Dependencies
         run: |
           set -eux
-          ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel setuptools
+          ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel build
 
       - name: Get Python Cache Location and Distribution
         id: cache-pip
