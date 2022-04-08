@@ -15,5 +15,5 @@ export const robotIcon = new LabIcon({
 /** an icon for robot resource files */
 export const resourceIcon = new LabIcon({
   name: 'robotframework:file-resource',
-  svgstr: ROBOT_SVG.replace('jp-icon4', 'jp-icon-contrast0'),
+  svgstr: ROBOT_SVG.replace('jp-icon5', 'jp-icon-contrast0'),
 });
