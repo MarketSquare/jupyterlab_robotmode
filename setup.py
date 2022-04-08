@@ -31,9 +31,15 @@ name = "jupyterlab_robotmode"
 lab_path = HERE / pkg_json["jupyterlab"]["outputDir"]
 
 remote_entry_and_source_map = [*lab_path.rglob("remoteEntry.*.js*")]
-assert (
-    len(remote_entry_and_source_map) <= 2
-), f">2 remoteEntry files found: {len(remote_entry_and_source_map)}"
+if len(remote_entry_and_source_map) > 2:
+    logging.error(
+        "Not ready to build distributions, "
+        f"{len(remote_entry_and_source_map)} remoteEntry.*.js* files found, "
+        "expected no more than 2.\n\n\t"
+        f"""*** Clean out {pkg_json["jupyterlab"]["outputDir"]} and retry ***"""
+        "\n"
+    )
+    sys.exit(1)
 
 
 # Representative files that should exist after a successful build
@@ -59,8 +65,8 @@ setup_args = dict(
     name=name,
     version=version,
     url=pkg_json["homepage"],
-    project_urls=dict(Source=pkg_json["homepage"], Tracker=pkg_json["bugs"]["url"]),
     author=pkg_json["author"],
+    project_urls=dict(Source=pkg_json["homepage"], Tracker=pkg_json["bugs"]["url"]),
     description=pkg_json["description"],
     license=pkg_json["license"],
     license_file="LICENSE",
