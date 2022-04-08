@@ -59,6 +59,7 @@ setup_args = dict(
     name=name,
     version=version,
     url=pkg_json["homepage"],
+    project_urls=dict(Source=pkg_json["homepage"], Tracker=pkg_json["bugs"]["url"]),
     author=pkg_json["author"],
     description=pkg_json["description"],
     license=pkg_json["license"],
