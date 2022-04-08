@@ -3,9 +3,22 @@ jupyterlab_robotmode setup
 """
 import json
 import sys
+import os
 from pathlib import Path
-
+import logging
 import setuptools
+
+logging.basicConfig(format="%(levelname)s: %(message)s")
+
+try:
+    from jupyter_packaging import wrap_installers, npm_builder, get_data_files
+except ImportError as e:
+    logging.warning(
+        "Build tool `jupyter-packaging` is missing. Install it with pip or conda."
+    )
+    if not ("--name" in sys.argv or "--version" in sys.argv):
+        raise e
+
 
 HERE = Path(__file__).parent.resolve()
 
@@ -18,8 +31,9 @@ name = "jupyterlab_robotmode"
 lab_path = HERE / pkg_json["jupyterlab"]["outputDir"]
 
 remote_entry_and_source_map = [*lab_path.rglob("remoteEntry.*.js*")]
-assert len(remote_entry_and_source_map) <= 2, \
-    f">2 remoteEntry files found: {len(remote_entry_and_source_map)}"
+assert (
+    len(remote_entry_and_source_map) <= 2
+), f">2 remoteEntry files found: {len(remote_entry_and_source_map)}"
 
 
 # Representative files that should exist after a successful build
@@ -75,25 +89,21 @@ setup_args = dict(
     ],
 )
 
-try:
-    from jupyter_packaging import wrap_installers, npm_builder, get_data_files
-
+if json.loads(os.environ.get("SKIP_POST_INSTALL", "0")):
+    logging.warning(
+        "Skipping postinstall: remember to run\n\n\t"
+        "jupyter labextension develop --overwrite ."
+    )
+    post_develop = None
+else:
     post_develop = npm_builder(
         build_cmd="install:extension", source_dir="src", build_dir=lab_path
     )
-    setup_args["cmdclass"] = wrap_installers(
-        post_develop=post_develop, ensured_targets=ensured_targets
-    )
-    setup_args["data_files"] = get_data_files(data_files_spec)
-except ImportError as e:
-    import logging
 
-    logging.basicConfig(format="%(levelname)s: %(message)s")
-    logging.warning(
-        "Build tool `jupyter-packaging` is missing. Install it with pip or conda."
-    )
-    if not ("--name" in sys.argv or "--version" in sys.argv):
-        raise e
+setup_args["cmdclass"] = wrap_installers(
+    post_develop=post_develop, ensured_targets=ensured_targets
+)
+setup_args["data_files"] = get_data_files(data_files_spec)
 
 if __name__ == "__main__":
     setuptools.setup(**setup_args)

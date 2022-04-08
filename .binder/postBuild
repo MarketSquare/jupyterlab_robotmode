@@ -3,7 +3,9 @@ set -eux
 
 jlpm --prefer-offline --ignore-optional
 
-python -m pip install -e . --ignore-installed --no-deps
+jlpm build
+
+SKIP_POST_INSTALL=1 python -m pip install -e . --ignore-installed --no-deps
 
 jupyter labextension develop . --overwrite
 
