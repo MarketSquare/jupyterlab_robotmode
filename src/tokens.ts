@@ -22,7 +22,7 @@ export const MIME_TYPE = 'text/x-robotframework';
 export const MODE_NAME = 'robotframework';
 
 /** the human-readable name of the CodeMirror mode */
-export const MODE_LABEL = 'Robot Framework';
+export const MODE_LABEL = 'robotframework';
 
 /** primary file extension */
 export const DEFAULT_EXTENSION = 'robot';
