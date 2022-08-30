@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfigbase",
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "types": ["node", "jest"]
+  },
+  "include": ["./**/*"],
+  "references": [{ "path": ".." }]
+}

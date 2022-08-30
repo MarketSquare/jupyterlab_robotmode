@@ -1,3 +1,12 @@
 #!/usr/bin/env bash
-python -m pip install -e . --ignore-installed --no-deps
+set -eux
+
+jlpm --prefer-offline --ignore-optional
+
+jlpm build
+
+SKIP_POST_INSTALL=1 python -m pip install -e . --ignore-installed --no-deps
+
+jupyter labextension develop . --overwrite
+
 jupyter labextension list

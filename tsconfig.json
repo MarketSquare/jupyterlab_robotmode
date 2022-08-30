@@ -1,16 +1,9 @@
 {
+  "extends": "./tsconfigbase",
+  "$schema": "http://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "allowJs": true,
-    "esModuleInterop": true,
-    "lib": ["es6", "dom"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noEmitOnError": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
     "outDir": "./lib",
-    "target": "ES5"
+    "rootDir": "./src"
   },
-  "files": ["node_modules/@jupyterlab/codemirror/typings/codemirror/codemirror.d.ts"],
-  "include": ["src/**/*"],
+  "include": ["src/**/*"]
 }

@@ -2,86 +2,115 @@
 jupyterlab_robotmode setup
 """
 import json
+import sys
 import os
-
-from jupyter_packaging import (
-    create_cmdclass, install_npm, ensure_targets,
-    combine_commands,
-)
+from pathlib import Path
+import logging
 import setuptools
 
-HERE = os.path.abspath(os.path.dirname(__file__))
+logging.basicConfig(format="%(levelname)s: %(message)s")
+
+try:
+    from jupyter_packaging import wrap_installers, npm_builder, get_data_files
+except ImportError as e:
+    logging.warning(
+        "Build tool `jupyter-packaging` is missing. Install it with pip or conda."
+    )
+    if not ("--name" in sys.argv or "--version" in sys.argv):
+        raise e
+
+
+HERE = Path(__file__).parent.resolve()
+
+# Get the package info from package.json
+pkg_json = json.loads((HERE / "package.json").read_text(encoding="utf-8"))
 
 # The name of the project
 name = "jupyterlab_robotmode"
 
-# Get our version
-with open(os.path.join(HERE, 'package.json')) as f:
-    version = json.load(f)['version']
+lab_path = HERE / pkg_json["jupyterlab"]["outputDir"]
 
-lab_path = os.path.join(HERE, name, "labextension")
+remote_entry_and_source_map = [*lab_path.rglob("remoteEntry.*.js*")]
+if len(remote_entry_and_source_map) > 2:
+    logging.error(
+        "Not ready to build distributions, "
+        f"{len(remote_entry_and_source_map)} remoteEntry.*.js* files found, "
+        "expected no more than 2.\n\n\t"
+        f"""*** Clean out {pkg_json["jupyterlab"]["outputDir"]} and retry ***"""
+        "\n"
+    )
+    sys.exit(1)
+
 
 # Representative files that should exist after a successful build
-jstargets = [
-    os.path.join(HERE, "lib", "index.js"),
-    os.path.join(lab_path, "package.json"),
-]
+ensured_targets = [str(lab_path / "package.json")]
 
-package_data_spec = {
-    name: [
-        "*"
-    ]
-}
-
-labext_name = "@marketsquare/jupyterlab_robotmode"
+share = f"""share/jupyter/labextensions/{pkg_json["name"]}"""
 
 data_files_spec = [
-    ("share/jupyter/labextensions/%s" % labext_name, lab_path, "**"),
-    ("share/jupyter/labextensions/%s" % labext_name, HERE, "install.json"),
+    (share, str(lab_path.relative_to(HERE)), "**"),
+    (share, str("."), "install.json"),
 ]
 
-cmdclass = create_cmdclass(
-    "jsdeps",
-    package_data_spec=package_data_spec,
-    data_files_spec=data_files_spec
-)
+long_description = (HERE / "README.md").read_text(encoding="utf-8")
 
-cmdclass["jsdeps"] = combine_commands(
-    install_npm(HERE, build_cmd="build:prod", npm=["jlpm"]),
-    ensure_targets(jstargets),
+version = (
+    pkg_json["version"]
+    .replace("-alpha.", "a")
+    .replace("-beta.", "b")
+    .replace("-rc.", "rc")
 )
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
 
 setup_args = dict(
     name=name,
     version=version,
-    url="https://github.com/MarketSquare/jupyterlab_robotmode",
-    author="MarketSquare",
-    description="A JupyterLab extensions which adds CodeMirror mode for Robot Framework syntax",
-    long_description= long_description,
+    url=pkg_json["homepage"],
+    author=pkg_json["author"],
+    project_urls=dict(Source=pkg_json["homepage"], Tracker=pkg_json["bugs"]["url"]),
+    description=pkg_json["description"],
+    license=pkg_json["license"],
+    license_file="LICENSE",
+    long_description=long_description,
     long_description_content_type="text/markdown",
-    cmdclass= cmdclass,
     packages=setuptools.find_packages(),
+    install_requires=[],
     zip_safe=False,
     include_package_data=True,
-    python_requires=">=3.6",
-    license="BSD-3-Clause",
+    python_requires=">=3.7",
     platforms="Linux, Mac OS X, Windows",
-    keywords=["Jupyter", "JupyterLab"],
+    keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
     classifiers=[
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Framework :: Jupyter",
+        "Framework :: Jupyter :: JupyterLab",
+        "Framework :: Jupyter :: JupyterLab :: 3",
+        "Framework :: Jupyter :: JupyterLab :: Extensions",
+        "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
+        "Framework :: Robot Framework",
     ],
 )
 
+if json.loads(os.environ.get("SKIP_POST_INSTALL", "0")):
+    logging.warning(
+        "Skipping postinstall: remember to run\n\n\t"
+        "jupyter labextension develop --overwrite ."
+    )
+    post_develop = None
+else:
+    post_develop = npm_builder(
+        build_cmd="install:extension", source_dir="src", build_dir=lab_path
+    )
+
+setup_args["cmdclass"] = wrap_installers(
+    post_develop=post_develop, ensured_targets=ensured_targets
+)
+setup_args["data_files"] = get_data_files(data_files_spec)
 
 if __name__ == "__main__":
     setuptools.setup(**setup_args)

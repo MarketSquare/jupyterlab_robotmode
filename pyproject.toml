@@ -1,3 +1,21 @@
 [build-system]
-requires = ["jupyter_packaging~=0.7.9", "jupyterlab>=3.0.0,==3.*", "setuptools>=40.8.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "jupyter_packaging>=0.12",
+    "jupyterlab>=3.3.0,==3.*",
+]
+build-backend = "jupyter_packaging.build_api"
+
+[tool.jupyter-packaging.options]
+skip-if-exists = ["jupyterlab_robotmode/labextension/package.json"]
+ensured-targets = [
+    "jupyterlab_robotmode/labextension/package.json",
+    "jupyterlab_robotmode/labextension/static/third-party-licenses.json",
+    "jupyterlab_robotmode/labextension/static/style.js",
+]
+
+[tool.jupyter-packaging.builder]
+factory = "jupyter_packaging.npm_builder"
+
+[tool.jupyter-packaging.build-args]
+build_cmd = "build:prod"
+npm = ["jlpm"]

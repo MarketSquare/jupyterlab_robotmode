@@ -1,5 +1,10 @@
-*.egg-info
-coverage
-jupyterlab_robotmode/labextension
-lib
-node_modules
+__pycache__/
+.ipynb_checkpoints/
+.yarn-packages/
+*.egg-info/
+*.tsbuildinfo
+coverage/
+dist/
+jupyterlab_robotmode/labextension/
+lib/
+node_modules/
