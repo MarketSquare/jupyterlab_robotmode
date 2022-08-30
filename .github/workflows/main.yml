@@ -76,7 +76,7 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
-        os: [ubuntu, windows, macos]
+        os: [ubuntu, windows, macos-latest]
         python-version: ['3.7', '3.10']
         lab-version: ['3']
         include:
@@ -86,7 +86,7 @@ jobs:
             dist: jupyterlab_robotmode*.whl
           - os: windows
             py-cmd: python
-          - os: macos
+          - os: macos-latest
             py-cmd: python
           - os: ubuntu
             py-cmd: python
