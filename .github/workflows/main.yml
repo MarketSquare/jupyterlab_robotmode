@@ -87,7 +87,7 @@ jobs:
           - os: windows
             py-cmd: python
           - os: macos
-            py-cmd: python3
+            py-cmd: python
           - os: ubuntu
             py-cmd: python
 
