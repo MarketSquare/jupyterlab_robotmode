@@ -138,7 +138,7 @@ const RULE_DOUBLE_STRING_START = r(/"/, TT.ST, { push: 'double_string' });
 const RULE_TAGS = r(
   /([|\s]*\s*)(\[\s*)(tags)(\s*\])(\s*\|?)/i,
   [TT.BK, TT.MT, TT.MT, TT.MT, TT.BK],
-  { sol: true, push: 'tags' }
+  { sol: true, push: 'tags' },
 );
 
 /** rule for special case of applying tags at the suite level */
@@ -150,28 +150,28 @@ const RULE_SUITE_TAGS = r(/(force tags|default tags)(\t+|  +)/i, [TT.MT, null], 
 const RULE_SUITE_TAGS_PIPE = r(
   /(\| +)(force tags|default tags)( *\|?)/i,
   [TT.BK, TT.MT, TT.BK],
-  { sol: true, push: 'tags' }
+  { sol: true, push: 'tags' },
 );
 
 /** rule for bracketed settings of keyword/test/task */
 const RULE_SETTING_KEYWORD = r(
   /([|\s]*)(\[\s*)(setup|teardown|template)(\s*\])(\s*\|?)/i,
   [TT.BK, TT.MT, TT.MT, TT.MT, TT.BK],
-  { push: 'keyword_invocation_no_continue', sol: true }
+  { push: 'keyword_invocation_no_continue', sol: true },
 );
 
 /** rule for bracketed settings of keyword/test/task that include a keyword */
 const RULE_SUITE_SETTING_KEYWORD = r(
   /(suite setup|suite teardown|test setup|test teardown|test template|task setup|task teardown|task template)(\t+|  +)/i,
   [TT.MT, null],
-  { push: 'keyword_invocation', sol: true }
+  { push: 'keyword_invocation', sol: true },
 );
 
 /** rule for bracketed settings of keyword/test/task that include a keyword (with pipes) */
 const RULE_SUITE_SETTING_KEYWORD_PIPE = r(
   /(\| +)(suite setup|suite teardown|test setup|test teardown|test template|task setup|task teardown|task template)( +\|)/i,
   [TT.BK, TT.MT, TT.BK],
-  { push: 'keyword_invocation', sol: true }
+  { push: 'keyword_invocation', sol: true },
 );
 
 const RULE_SETTING_LIBRARY = r(/(library)(\t+|  +)/i, [TT.MT, null], {
@@ -212,12 +212,12 @@ const base = [
   r(
     // a non-variable argument fragment before a variable before an equal
     /([^\s\$@&%=]((?!\t+|\s+\|\s+|  +)([^=]|\\=))*?)(?=[$@&%].*?[^ =\\]=($|  |[^=]|\s+\||\t))/,
-    TT.AT
+    TT.AT,
   ),
   r(
     // a non-variable argument fragment before an equal
     /([^\s\$@&%=]((?!\t+|\s+\|\s+|  +)([^=]|\\=))*?)(?==($|  |[^=]|\s+\||\t))/,
-    TT.AT
+    TT.AT,
   ),
   // r(/[^\s]+:(?!\/)/, TT.OP),  // this was generating false positives with TRY
   r(/(=!<>+\-*\/%)*==?/, TT.OP),
@@ -250,7 +250,7 @@ states.settings = [
   r(
     /(\|*\s*)(resource|variables|documentation|metadata|test timeout|task timeout)(\s*)/i,
     [TT.BK, TT.MT, null],
-    { sol: true }
+    { sol: true },
   ),
   ...base,
 ];
@@ -264,7 +264,7 @@ states.library = [
     [TT.AM, TT.BK, TT.DF, null, TT.BK, null],
     {
       pop: true,
-    }
+    },
   ),
   ...base,
 ];
@@ -276,7 +276,7 @@ const RULE_START_BDD = r(
   {
     push: 'keyword_invocation',
     sol: true,
-  }
+  },
 );
 /** rule for whitespace keywords */
 const RULE_KEY_START = r(/(\t+|  +)(?!\.\.\.)/, null, {
@@ -290,7 +290,7 @@ const RULE_KEY_START_PIPE = r(
   {
     push: 'keyword_invocation',
     sol: true,
-  }
+  },
 );
 
 /** rule for for old-style loops (slashes) */
@@ -309,14 +309,14 @@ const RULE_START_LOOP_NEW = r(/(\s\|*\s*)(FOR)(\s\|*\s*)/, [null, TT.AM, null], 
 const RULE_START_INLINE_IF = r(
   /(\s*)(IF)(\s\|*\s*)(?=[^\s].*\s{2,})/,
   [null, TT.AM as any, null],
-  { push: 'inline_if_start', sol: true }
+  { push: 'inline_if_start', sol: true },
 );
 
 /** rule for inline if keyword with assignment */
 const RULE_START_INLINE_IF_VAR = r(
   /(\s+)(.*?)(\s+)(=)(\s+)(IF)(\s\|*\s*)(?=[^\s].*\s{2,})/,
   [null, TT.V2, null, TT.OP, null, TT.AM as any, null],
-  { push: 'inline_if_start', sol: true }
+  { push: 'inline_if_start', sol: true },
 );
 
 /** rule for if keyword */
@@ -326,7 +326,7 @@ const RULE_START_IF = r(
   {
     push: 'if_start',
     sol: true,
-  }
+  },
 );
 
 /** rule for else if keyword */
@@ -419,13 +419,13 @@ const RULES_KEYWORD_INVOKING = [
 const RULE_SETTING_SIMPLE = r(
   /(\t+|  +)(\[\s*)(arguments|documentation|return|timeout)(\s*\])(\s*)/i,
   [null, TT.MT, TT.MT, TT.MT, null],
-  { sol: true }
+  { sol: true },
 );
 
 const RULE_SETTING_SIMPLE_PIPE = r(
   /(\|)(\s+)([^|*]*)(\s+)(\|)(\s+)(\[\s*)(arguments|documentation|return|timeout)(\s*\])(\s*)(\|?)/i,
   [TT.BK, null, TT.SH, null, TT.BK, null, TT.MT, TT.MT, TT.MT, null, TT.BK],
-  { sol: true }
+  { sol: true },
 );
 
 /** rule for atomic control flow */
@@ -663,7 +663,7 @@ states.loop_body_old = [
       ...rule,
       regex: new RegExp(
         /([\|\s]*\s*)(\\)/.source +
-          (rule.regex instanceof RegExp ? rule.regex.source : rule.regex)
+          (rule.regex instanceof RegExp ? rule.regex.source : rule.regex),
       ),
       token:
         rule.token instanceof Array
@@ -678,13 +678,13 @@ states.loop_body_old = [
 const RULE_CASE_SETTING_SIMPLE = r(
   /(\t+|  +)(\[\s*)(documentation|timeout)(\s*\])(\s*)/i,
   [null, TT.MT, TT.MT, TT.MT, null],
-  { sol: true }
+  { sol: true },
 );
 
 const RULE_CASE_SETTING_SIMPLE_PIPE = r(
   /(\|)(\s+)([^|*]*)(\s+)(\|)(\s+)(\[\s*)(documentation|timeout)(\s*\])(\s*)(\|?)/i,
   [TT.BK, null, TT.SH, null, TT.BK, null, TT.MT, TT.MT, TT.MT, null, TT.BK],
-  { sol: true }
+  { sol: true },
 );
 
 /** rules for data rows inside test/task definition */

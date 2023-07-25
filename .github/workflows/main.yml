@@ -2,16 +2,16 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, 0.4.x]
   pull_request:
-    branches: [main]
+    branches: [main, 0.4.x]
 
 defaults:
   run:
     shell: bash -l {0}
 
 env:
-  CACHE_EPOCH: 0
+  CACHE_EPOCH: 1
   BINDER_ENV: .binder/environment.yml
 
 jobs:
@@ -21,14 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Cache conda
-        uses: actions/cache@v3
-        with:
-          path: ~/conda_pkgs_dir
-          key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-${{ hashFiles(env.BINDER_ENV) }}
-          restore-keys: ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-
 
       - name: Cache JS
         uses: actions/cache@v3
@@ -43,7 +35,6 @@ jobs:
           environment-file: ${{ env.BINDER_ENV }}
           miniforge-variant: Mambaforge
           use-mamba: true
-          use-only-tar-bz2: true
 
       - name: Build Python packages
         run: pyproject-build --sdist --wheel
@@ -60,16 +51,22 @@ jobs:
       - name: Upload Distributions
         uses: actions/upload-artifact@v3
         with:
-          name: jupyterlab_robotmode dist ${{ github.run_number }}
+          name: jupyterlab_robotmode_dist_${{ github.run_number }}
           path: ./dist
 
       - name: Install jupyterlab_robotmode
-        run:
-          python -m pip install -e . --no-build-isolation --no-deps
-          --install-option="--skip-npm"
+        run: |-
+          set -eux
+          python -m pip install -e . --no-build-isolation --no-deps --install-option="--skip-npm"
 
       - name: Run frontend unit tests
         run: jlpm test
+
+      - name: Lint Python
+        run: |-
+          set -eux
+          black --check setup.py jupyterlab_robotmode
+          ruff setup.py jupyterlab_robotmode
 
   test:
     needs: [build]
@@ -77,53 +74,49 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu, windows, macos]
-        python-version: ['3.7', '3.10']
+        python-version: ['3.8', '3.11']
         lab-version: ['3']
         include:
-          - python-version: '3.7'
+          - python-version: '3.8'
             dist: jupyterlab_robotmode*.tar.gz
-          - python-version: '3.10'
+          - python-version: '3.11'
             dist: jupyterlab_robotmode*.whl
           - os: windows
             py-cmd: python
+            pip-cache: ~\AppData\Local\pip\Cache
           - os: macos
             py-cmd: python3
+            pip-cache: ~/Library/Caches/pip
           - os: ubuntu
             py-cmd: python
+            pip-cache: ~/.cache/pip
 
     steps:
       - name: Install Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Download Distributions
         uses: actions/download-artifact@v3
         with:
-          name: jupyterlab_robotmode dist ${{ github.run_number }}
+          name: jupyterlab_robotmode_dist_${{ github.run_number }}
           path: ./dist
-
-      - name: Install Setup Dependencies
-        run: |
-          set -eux
-          ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel build
-
-      - name: Get Python Cache Location and Distribution
-        id: cache-pip
-        shell: bash -l {0}
-        run: |
-          set -eux
-          echo "::set-output name=dir::$(${{ matrix.py-cmd }} -m pip cache dir)"
 
       - name: Cache Python Dependencies
         uses: actions/cache@v3
         with:
-          path: ${{ steps.cache-pip.outputs.dir }}
+          path: ${{ matrix.pip-cache }}
           key: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-${{ matrix.lab-version }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+
+      - name: Install Setup Dependencies
+        run: |
+          set -eux
+          ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel build setuptools
 
       - name: Install Dependencies
         run: |
@@ -134,10 +127,10 @@ jobs:
         run: |
           set -eux
           cd dist
-          ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }}
+          ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }} --no-deps --ignore-installed
 
       - name: Check labextension
         run: |
           set -eux
           ${{ matrix.py-cmd }} -m jupyter labextension list
-          ${{ matrix.py-cmd }} -m jupyter labextension list 2>&1 | grep -ie "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
+          ${{ matrix.py-cmd }} -m jupyter labextension list 2>&1 | grep -iE "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -

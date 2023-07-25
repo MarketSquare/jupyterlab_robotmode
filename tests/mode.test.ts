@@ -60,7 +60,7 @@ const parseTokens = (robot: string): string[] => {
   for (let line = 0; line < lineCount; line++) {
     editor.setCursor({ line: line, ch: 0 });
     const nodes = body.querySelector(
-      '.CodeMirror-scroll .CodeMirror-line span'
+      '.CodeMirror-scroll .CodeMirror-line span',
     ).childNodes;
     const spans: any[] = [];
     nodes.forEach((x) => spans.push(x));

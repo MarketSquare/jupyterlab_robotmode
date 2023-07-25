@@ -5,10 +5,12 @@ channels:
   - nodefaults
 
 dependencies:
-  - build
+  - black
   - jupyter-packaging >=0.12
   - jupyterlab >=3.3,<4
-  - nodejs >=14,!=15.*,<17
+  - nodejs >=18,<19
   - pip
   - python
+  - python-build
+  - ruff
   - twine
