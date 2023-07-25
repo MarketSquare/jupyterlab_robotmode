@@ -36,6 +36,9 @@ jobs:
           miniforge-variant: Mambaforge
           use-mamba: true
 
+      - name: Install JS deps
+        run: jlpm --prefer-offline --ignore-optional
+
       - name: Build JS
         run: jlpm build:prod
 
