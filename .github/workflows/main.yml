@@ -36,8 +36,11 @@ jobs:
           miniforge-variant: Mambaforge
           use-mamba: true
 
+      - name: Build JS
+        run: jlpm build:prod
+
       - name: Build Python packages
-        run: pyproject-build --sdist --wheel
+        run: pyproject-build --sdist --wheel --no-isolation
 
       - name: Check built packages
         run: twine check dist/*
@@ -57,7 +60,7 @@ jobs:
       - name: Install jupyterlab_robotmode
         run: |-
           set -eux
-          python -m pip install -e . --no-build-isolation --no-deps --install-option="--skip-npm"
+          python -m pip install -vv . --no-deps $(ls dist/*.whl)
 
       - name: Run frontend unit tests
         run: jlpm test

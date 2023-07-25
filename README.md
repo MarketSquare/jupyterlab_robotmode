@@ -13,7 +13,10 @@ A JupyterLab extension which adds CodeMirror mode for Robot Framework syntax
 
 ## Installation
 
-### For JupyterLab 3
+### For JupyterLab>3
+
+> **Note**: Support for JupyterLab 4 and Notebook 7 is in the planning stage: see
+> discussion on [#14].
 
 ```bash
 pip install jupyterlab_robotmode
@@ -26,6 +29,8 @@ conda install jupyterlab_robotmode -c conda-forge
 ```
 
 ### For JupyterLab <=2
+
+> **Note**: This will pull a significantly older, unmaintained version of the extension.
 
 ```bash
 jupyter labextension install @marketsquare/jupyterlab_robotmode
@@ -41,3 +46,4 @@ jupyter labextension install @marketsquare/jupyterlab_robotmode
 [conda]: https://anaconda.org/conda-forge/jupyterlab_robotmode
 [screenshot]:
   https://user-images.githubusercontent.com/45380/162342746-48561188-5859-4469-8634-3c4fd13cdef5.png
+[#14]: https://github.com/MarketSquare/jupyterlab_robotmode/issues/14
