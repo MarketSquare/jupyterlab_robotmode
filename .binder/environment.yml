@@ -6,6 +6,7 @@ channels:
 
 dependencies:
   - black
+  - jsonschema-with-format-nongpl
   - jupyter-packaging >=0.12
   - jupyterlab >=3.3,<4
   - nodejs >=18,<19
