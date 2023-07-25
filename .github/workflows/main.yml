@@ -63,7 +63,7 @@ jobs:
       - name: Install jupyterlab_robotmode
         run: |-
           set -eux
-          python -m pip install -vv . --no-deps $(ls dist/*.whl)
+          cd dist && python -m pip install -vv . --no-deps --no-build-isolation --ignore-installed $(ls *.whl)
 
       - name: Run frontend unit tests
         run: jlpm test
