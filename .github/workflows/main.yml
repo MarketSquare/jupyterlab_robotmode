@@ -143,4 +143,4 @@ jobs:
       - name: Check labextension
         run: |
           python -m jupyter labextension list
-          python -m jupyter labextension list 2>&1 | python -c "import sys, re; assert re.search(r'@marketsquare/jupyterlab_robotmode.*enabled.*ok', sys.stdin.read().lower())"
+          python -m jupyter labextension list 2>&1 | python -c "import sys, re; assert re.search(r'@marketsquare/jupyterlab_robotmode.*enabled.*ok', sys.stdin.read().lower()); print('OK')"
