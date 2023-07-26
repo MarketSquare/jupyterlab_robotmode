@@ -88,13 +88,10 @@ jobs:
           - python-version: '3.11'
             dist: jupyterlab_robotmode*.whl
           - os: windows
-            py-cmd: python
             pip-cache: ~\AppData\Local\pip\Cache
           - os: macos
-            py-cmd: python3
             pip-cache: ~/Library/Caches/pip
           - os: ubuntu
-            py-cmd: python
             pip-cache: ~/.cache/pip
 
     steps:
@@ -122,26 +119,26 @@ jobs:
       - name: Install Setup Dependencies
         run: |
           set -eux
-          ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel build setuptools
+          python -m pip install --upgrade pip wheel build setuptools
 
       - name: Install Dependencies
         run: |
           set -eux
-          ${{ matrix.py-cmd }} -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
+          python -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
 
       - name: Install Distribution
         run: |
           set -eux
           cd dist
-          ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }} --no-deps --ignore-installed
+          python -m pip install -v ${{ matrix.dist }} --no-deps --ignore-installed
 
       - name: List Python Environment
         run: |
-          ${{ matrix.py-cmd }} -m pip list --format=freeze
-          ${{ matrix.py-cmd }} --version
+          python -m pip list --format=freeze
+          python --version
 
       - name: Check labextension
         run: |
           set -eux
-          ${{ matrix.py-cmd }} -m jupyter labextension list
-          ${{ matrix.py-cmd }} -m jupyter labextension list 2>&1 | grep -iE "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
+          python -m jupyter labextension list
+          python -m jupyter labextension list 2>&1 | grep -iE "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
