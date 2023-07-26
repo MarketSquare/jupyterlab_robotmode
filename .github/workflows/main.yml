@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [main, 0.4.x]
 
-defaults:
-  run:
-    shell: bash -l {0}
-
 env:
   CACHE_EPOCH: 1
   BINDER_ENV: .binder/environment.yml
@@ -17,6 +13,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -l {0}
 
     steps:
       - name: Checkout
@@ -47,6 +47,12 @@ jobs:
 
       - name: Check built packages
         run: twine check dist/*
+
+      - name: Remember Distributions
+        run: |-
+          cd dist
+          echo "SDIST_NAME=$(ls *.tar.gz)" >> $GITHUB_ENV
+          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_ENV
 
       - name: Build NPM package
         run: cd dist && npm pack --ignore-scripts ..
@@ -84,9 +90,9 @@ jobs:
         lab-version: ['3']
         include:
           - python-version: '3.8'
-            dist: jupyterlab_robotmode*.tar.gz
+            dist: ${{ env.SDIST_NAME }}
           - python-version: '3.11'
-            dist: jupyterlab_robotmode*.whl
+            dist: ${{ env.WHEEL_NAME }}
           - os: windows
             pip-cache: ~\AppData\Local\pip\Cache
           - os: macos
@@ -118,19 +124,16 @@ jobs:
 
       - name: Install Setup Dependencies
         run: |
-          set -eux
           python -m pip install --upgrade pip wheel build setuptools
 
       - name: Install Dependencies
         run: |
-          set -eux
           python -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
 
       - name: Install Distribution
         run: |
-          set -eux
           cd dist
-          python -m pip install -v ${{ matrix.dist }} --no-deps --ignore-installed
+          python -m pip install -v --no-deps --ignore-installed ${{ matrix.dist }}
 
       - name: List Python Environment
         run: |
