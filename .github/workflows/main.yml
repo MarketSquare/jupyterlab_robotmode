@@ -87,12 +87,11 @@ jobs:
       matrix:
         os: [ubuntu, windows, macos]
         python-version: ['3.8', '3.11']
-        lab-version: ['3']
         include:
           - python-version: '3.8'
-            dist: ${{ env.SDIST_NAME }}
+            dist: sdist
           - python-version: '3.11'
-            dist: ${{ env.WHEEL_NAME }}
+            dist: wheel
           - os: windows
             pip-cache: ~\AppData\Local\pip\Cache
           - os: macos
@@ -126,14 +125,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip wheel build setuptools
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install 'jupyterlab==${{ matrix.lab-version }}.*'
-
-      - name: Install Distribution
+      - name: Install SDist
+        if: matrix.dist == "sdist"
         run: |
           cd dist
-          python -m pip install -v --no-deps --ignore-installed ${{ matrix.dist }}
+          python -m pip install -v ${{ env.SDIST_NAME }}
+
+      - name: Install Wheel
+        if: matrix.dist == "wheel"
+        run: |
+          cd dist
+          python -m pip install -v ${{ env.WHEEL_NAME }}
 
       - name: List Python Environment
         run: |
