@@ -135,6 +135,11 @@ jobs:
           cd dist
           ${{ matrix.py-cmd }} -m pip install -v ${{ matrix.dist }} --no-deps --ignore-installed
 
+      - name: List Python Environment
+        run: |
+          ${{ matrix.py-cmd }} -m pip list --format=freeze
+          ${{ matrix.py-cmd }} --version
+
       - name: Check labextension
         run: |
           set -eux
