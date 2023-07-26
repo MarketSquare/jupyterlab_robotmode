@@ -133,7 +133,7 @@ jobs:
       - name: Install Distribution
         run: |
           cd dist
-          python -m pip install -v ${{ env.DIST_NAME }}
+          python -m pip install -v "${{ env.DIST_NAME }}"
 
       - name: List Python Environment
         run: |
@@ -142,6 +142,5 @@ jobs:
 
       - name: Check labextension
         run: |
-          set -eux
           python -m jupyter labextension list
-          python -m jupyter labextension list 2>&1 | grep -iE "@marketsquare/jupyterlab_robotmode.*enabled.*ok" -
+          python -m jupyter labextension list 2>&1 | python -c "import sys, re; assert re.search(r'@marketsquare/jupyterlab_robotmode.*enabled.*ok', sys.stdin.read().lower())"
