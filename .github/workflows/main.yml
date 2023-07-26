@@ -126,13 +126,13 @@ jobs:
           python -m pip install --upgrade pip wheel build setuptools
 
       - name: Install SDist
-        if: matrix.dist == "sdist"
+        if: matrix.dist == 'sdist'
         run: |
           cd dist
           python -m pip install -v ${{ env.SDIST_NAME }}
 
       - name: Install Wheel
-        if: matrix.dist == "wheel"
+        if: matrix.dist == 'wheel'
         run: |
           cd dist
           python -m pip install -v ${{ env.WHEEL_NAME }}
