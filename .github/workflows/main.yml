@@ -48,12 +48,6 @@ jobs:
       - name: Check built packages
         run: twine check dist/*
 
-      - name: Remember Distributions
-        run: |-
-          cd dist
-          echo "SDIST_NAME=$(ls *.tar.gz)" >> $GITHUB_ENV
-          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_ENV
-
       - name: Build NPM package
         run: cd dist && npm pack --ignore-scripts ..
 
@@ -116,26 +110,30 @@ jobs:
         with:
           path: ${{ matrix.pip-cache }}
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-${{ matrix.lab-version }}
-          restore-keys: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-install-${{ matrix.python-version }}-
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-${{ matrix.python-version }}
+
+      - name: Use SDist
+        if: matrix.dist == 'sdist'
+        shell: bash -l {0}
+        run: |
+          cd dist
+          echo "DIST_NAME=$(ls *.tar.gz)" >> "$GITHUB_ENV"
+
+      - name: Use Wheel
+        if: matrix.dist == 'wheel'
+        shell: bash -l {0}
+        run: |
+          cd dist
+          echo "DIST_NAME=$(ls *.whl)" >> "$GITHUB_ENV"
 
       - name: Install Setup Dependencies
         run: |
           python -m pip install --upgrade pip wheel build setuptools
 
-      - name: Install SDist
-        if: matrix.dist == 'sdist'
+      - name: Install Distribution
         run: |
           cd dist
-          python -m pip install -v ${{ env.SDIST_NAME }}
-
-      - name: Install Wheel
-        if: matrix.dist == 'wheel'
-        run: |
-          cd dist
-          python -m pip install -v ${{ env.WHEEL_NAME }}
+          python -m pip install -v ${{ env.DIST_NAME }}
 
       - name: List Python Environment
         run: |
