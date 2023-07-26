@@ -11,7 +11,6 @@ dependencies:
   - jupyterlab >=3.3,<4
   - nodejs >=18,<19
   - pip
-  - python
   - python-build
   - ruff
   - twine
