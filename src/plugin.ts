@@ -58,7 +58,7 @@ function makePlugin(
   mime: string,
   extension: string,
   icon: LabIcon,
-  command: string
+  command: string,
 ): JupyterFrontEndPlugin<void> {
   return {
     id,
@@ -70,7 +70,7 @@ function makePlugin(
       browserFactory?: IFileBrowserFactory,
       launcher?: ILauncher,
       menu?: IMainMenu,
-      palette?: ICommandPalette
+      palette?: ICommandPalette,
     ) => {
       const { commands, contextMenu } = app;
 
@@ -146,7 +146,7 @@ const filePlugin = makePlugin(
   MIME_TYPE,
   DEFAULT_EXTENSION,
   robotIcon,
-  CommandIDs.createNew
+  CommandIDs.createNew,
 );
 
 /** A plugin for .resource files */
@@ -156,7 +156,7 @@ const resourcePlugin = makePlugin(
   MIME_TYPE,
   RESOURCE_EXTENSION,
   resourceIcon,
-  CommandIDs.createNewResource
+  CommandIDs.createNewResource,
 );
 
 export default [modePlugin, filePlugin, resourcePlugin];

@@ -1,5 +1,6 @@
 __pycache__/
 .ipynb_checkpoints/
+.ruff_cache/
 .yarn-packages/
 *.egg-info/
 *.tsbuildinfo
